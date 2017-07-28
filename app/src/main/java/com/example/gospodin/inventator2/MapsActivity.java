@@ -64,6 +64,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
+
         Criteria criteria = new Criteria();
         provider = locationManager.getBestProvider(criteria, false);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -164,6 +165,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void inventDetails(View view){
+        FragmentCreateUp fragmentCreateUp = new FragmentCreateUp();
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, fragmentCreateUp);
+        fragmentTransaction.commit();
+
+        FragmentCreateDown fragmentCreateDown = new FragmentCreateDown();
+        fragmentTransaction.replace(R.id.fragment_buttons, fragmentCreateDown);
+
 
     }
 
