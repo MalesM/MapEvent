@@ -14,7 +14,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -28,12 +27,12 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener,
+        FragmentCreateUp.GetData, FragmentCreateUp.SendMarkerInfo{
 
     private GoogleMap mMap;
     private LocationManager locationManager;
-    private TextView tv1, tv2;
-    private Button invent_button, confirm_button, cancel_button;
+    private Button invent_button, confirm_button, cancel_button, cancel_button2;
     private ImageButton settingsButton, searchButton;
     private String provider;
     private Location myL;
@@ -56,7 +55,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         SupportMapFragment mMapFragment = SupportMapFragment.newInstance();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.add(R.id.fragment_container, mMapFragment);
+        fragmentTransaction.add(R.id.fragment_container, mMapFragment, "Map");
         fragmentTransaction.commit();
         mMapFragment.getMapAsync(this);
         FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
@@ -89,13 +88,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return;
         }
         mMap.setMyLocationEnabled(true);
-        /*mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(LatLng latLng) {
-                markers.add(mMap.addMarker(new MarkerOptions().position(latLng)));
-            }
-        });*/
 
+        mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
+            @Override
+            public void onMarkerDragStart(Marker marker) {
+
+            }
+
+            @Override
+            public void onMarkerDrag(Marker marker) {
+
+            }
+
+            @Override
+            public void onMarkerDragEnd(Marker marker) {
+                preparedMarker = marker;
+            }
+        });
 
     }
 
@@ -122,8 +131,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             firstZoom = 1;
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat,lng),zoomLevel));
         }
-        //tv1.setText(String.valueOf(lat));
-        //tv2.setText(String.valueOf(lng));
     }
 
     @Override
@@ -145,6 +152,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Toast.LENGTH_SHORT).show();
     }
 
+    //Click invent on home screen
     public void createInvent(View view){
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
@@ -164,10 +172,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         fragmentTransaction.commit();
     }
 
+    //Go to details after pick location
     public void inventDetails(View view){
+
+        preparedMarker.setDraggable(false);
         FragmentCreateUp fragmentCreateUp = new FragmentCreateUp();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, fragmentCreateUp);
+        fragmentTransaction.replace(R.id.fragment_container, fragmentCreateUp, "Details");
+        fragmentTransaction.addToBackStack(null); // mozda da se izbrise!!
         fragmentTransaction.commit();
 
         FragmentCreateDown fragmentCreateDown = new FragmentCreateDown();
@@ -176,12 +188,47 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+    //Cancel after first press
     public void cancelCreation(View view){
         preparedMarker.remove();
         FragmentButtonsHome fragmentButtonsHome= new FragmentButtonsHome();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
         fragmentTransaction.commit();
+    }
+
+    //Cancel in detail invent
+    public void cancelInvent(View view){
+
+        preparedMarker.remove();
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
+        fragmentTransaction.commit();
+        FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
+        fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
+
+    }
+
+    //fully invent create
+    public void finishInvent(View view){
+        FragmentCreateUp fragmentCreateUp = (FragmentCreateUp) getSupportFragmentManager().findFragmentByTag("Details");
+        fragmentCreateUp.sendMarkerInfo();
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
+        fragmentTransaction.commit();
+        FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
+        fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
+    }
+
+    @Override
+    public Marker getCoord() {
+        return preparedMarker;
+    }
+
+    @Override
+    public void sendInfo(String title, String detail) {
+        preparedMarker.setTitle(title);
+        preparedMarker.setSnippet(detail);
     }
 
     public void initViews(){
@@ -191,6 +238,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         confirm_button = (Button) findViewById(R.id.confirm_button);
         cancel_button = (Button) findViewById(R.id.cancel_button);
+        cancel_button2 = (Button) findViewById(R.id.cancel_button2);
+
     }
+
 }
 
