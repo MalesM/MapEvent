@@ -25,7 +25,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener,
         FragmentCreateUp.GetData, FragmentCreateUp.SendMarkerInfo{
@@ -39,15 +38,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private int firstZoom = 0, mapReady = 0;
     private int mapReadySaved;
     private float zoomLevel = 16;
-    private List<Marker> markers = new ArrayList<>();
+    private ArrayList<MarkerClass> markers = new ArrayList<MarkerClass>();
     private boolean saved = true;
     private int click = 0, drag = 0;
+    private double llat, llng;
     private Marker preparedMarker;
+    public TinyDB tinyDB;
+    public MarkerClass markerClass;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        tinyDB = new TinyDB(getApplicationContext());
 
         initViews();
 
@@ -84,6 +88,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
 
+        if(tinyDB.getBoolean("haveMarkers")){
+            for(MarkerClass m : markers){
+                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription()));
+            }
+        }
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
@@ -115,12 +125,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return;
         }
         locationManager.requestLocationUpdates(provider, 400, 1, this);
+
+        if(tinyDB.getBoolean("haveMarkers")){
+            markers = tinyDB.getListObject("Markers", MarkerClass.class);
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         locationManager.removeUpdates(this);
+
+        tinyDB.putListObject("Markers", markers);
+        tinyDB.putBoolean("haveMarkers", true);
     }
 
     @Override
@@ -211,13 +228,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //fully invent create
     public void finishInvent(View view){
+
         FragmentCreateUp fragmentCreateUp = (FragmentCreateUp) getSupportFragmentManager().findFragmentByTag("Details");
         fragmentCreateUp.sendMarkerInfo();
+
+        markers.add(new MarkerClass(preparedMarker.getPosition().latitude, preparedMarker.getPosition().longitude,
+                preparedMarker.getTitle(), preparedMarker.getSnippet()));
+
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
         fragmentTransaction.commit();
         FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
         fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
+
+
     }
 
     @Override
@@ -239,6 +263,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         confirm_button = (Button) findViewById(R.id.confirm_button);
         cancel_button = (Button) findViewById(R.id.cancel_button);
         cancel_button2 = (Button) findViewById(R.id.cancel_button2);
+
+    }
+
+    @Override
+    protected void onResumeFragments() {
+        super.onResumeFragments();
 
     }
 

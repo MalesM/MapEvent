@@ -1,21 +1,33 @@
 package com.example.gospodin.inventator2;
 
-import com.google.android.gms.maps.model.Marker;
-
-enum Type {Sport, Culture, Party};
+enum Type {Sport, Culture, Party, Food}
 
 
 public class MarkerClass {
-    private Marker marker;
-    private String title, description;
-    private Type type;
+    private double lat, lng;
+    private String title="", description="";
 
-    public MarkerClass(Marker marker, String title, String description, Type type){
-        this.marker = marker;
+
+    public MarkerClass(Double lat, Double lng, String title, String description){
+        this.lat = lat;
+        this.lng = lng;
         this.title = title;
         this.description = description;
-        this.type = type;
     }
 
+    public double getLat(){
+        return lat;
+    }
 
+    public double getLng(){
+        return lng;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
 }
