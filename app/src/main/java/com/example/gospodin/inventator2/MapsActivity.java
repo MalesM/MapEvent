@@ -2,6 +2,7 @@ package com.example.gospodin.inventator2;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
@@ -34,7 +35,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Button invent_button, confirm_button, cancel_button, cancel_button2;
     private ImageButton settingsButton, searchButton;
     private String provider;
-    private Location myL;
+    public Location myL;
     private int firstZoom = 0, mapReady = 0;
     private int mapReadySaved;
     private float zoomLevel = 16;
@@ -43,7 +44,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private int click = 0, drag = 0;
     private double llat, llng;
     private Marker preparedMarker;
-    public TinyDB tinyDB;
+    static TinyDB tinyDB;
     public MarkerClass markerClass;
 
     @Override
@@ -144,6 +145,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onLocationChanged(Location location) {
         double lat = location.getLatitude();
         double lng = location.getLongitude();
+        myL = location;
         if(firstZoom == 0 && mapReady == 1){
             firstZoom = 1;
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat,lng),zoomLevel));
@@ -266,11 +268,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    @Override
-    protected void onResumeFragments() {
-        super.onResumeFragments();
-
+    // filter with service
+    public void searchInventa(View view){
+        Intent i = new Intent(MapsActivity.this, TrackingService.class);
+        i.putExtra("lat", myL.getLatitude());
+        i.putExtra("lng", myL.getLongitude());
+        startService(i);
     }
 
+    //filter with thread
+    public void searchInvent(View view){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+            }
+        }).start();
+    }
 }
 
