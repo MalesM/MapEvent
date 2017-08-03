@@ -10,8 +10,9 @@
         android:layout_width="wrap_content"
         android:layout_height="100dp"
         android:layout_weight="1"
+        android:background="@android:color/white"
         android:onClick="searchInvent"
-        android:src="@drawable/ic_help" />
+        android:src="@drawable/search" />
 
     <Button
         android:id="@+id/invent_button"
@@ -34,6 +35,7 @@
         android:layout_width="wrap_content"
         android:layout_height="100dp"
         android:layout_weight="1"
-        android:src="@mipmap/ic_launcher"/>
+        android:background="@android:color/white"
+        android:src="@drawable/settings" />
 
 </LinearLayout>

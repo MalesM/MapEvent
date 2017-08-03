@@ -30,13 +30,14 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.util.ArrayList;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener,
-        FragmentCreateUp.GetData, FragmentCreateUp.SendMarkerInfo{
+        FragmentCreateUp.GetData, FragmentCreateUp.SendMarkerInfo, FragmentSearchUp.SendRadius{
 
     private GoogleMap mMap;
     private LocationManager locationManager;
     private Button invent_button, confirm_button, cancel_button, cancel_button2;
     private ImageButton settingsButton, searchButton;
     private String provider;
+    private String radius;
     public Location myL;
     private int firstZoom = 0, mapReady = 0;
     private float zoomLevel = 16;
@@ -79,9 +80,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
         fragmentTransaction.add(R.id.fragment_buttons, fragmentButtonsHome);
 
-
-
-
         Criteria criteria = new Criteria();
         provider = locationManager.getBestProvider(criteria, false);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -116,14 +114,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
             @Override
-            public void onMarkerDragStart(Marker marker) {
-
-            }
+            public void onMarkerDragStart(Marker marker) {}
 
             @Override
-            public void onMarkerDrag(Marker marker) {
-
-            }
+            public void onMarkerDrag(Marker marker) {}
 
             @Override
             public void onMarkerDragEnd(Marker marker) {
@@ -174,14 +168,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
     public void onProviderEnabled(String provider) {
         Toast.makeText(this, "Enabled new provider " + provider,
                 Toast.LENGTH_SHORT).show();
-
     }
 
     @Override
@@ -247,6 +239,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+    //Cancel in search window
+    public void cancelfInvent(View view){
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
+        fragmentTransaction.commit();
+        FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
+        fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
+    }
+
     //fully invent create
     public void finishInvent(View view){
 
@@ -270,6 +271,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return preparedMarker;
     }
 
+    //get information from create fragment
     @Override
     public void sendInfo(String title, String detail) {
         preparedMarker.setTitle(title);
@@ -291,17 +293,55 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription()));
     }
 
-    // filter with service
+    // go to search fragment
     public void searchInvent(View view){
-        tinyDB.putListObject("Markers", markers);
+        FragmentSearchUp fragmentSearchUp = new FragmentSearchUp();
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, fragmentSearchUp, "Search");
+        fragmentTransaction.addToBackStack(null); // mozda da se izbrise!!
+        fragmentTransaction.commit();
+
+        FragmentSearchDown fragmentSearchDown = new FragmentSearchDown();
+        fragmentTransaction.replace(R.id.fragment_buttons, fragmentSearchDown);
+
+
+        /*tinyDB.putListObject("Markers", markers);
         Intent i = new Intent(MapsActivity.this, TrackingService.class);
         i.putExtra("lat", myL.getLatitude());
         i.putExtra("lng", myL.getLongitude());
         startService(i);
 
         Toast toast = Toast.makeText(getApplicationContext(), "Service started", Toast.LENGTH_SHORT);
-        toast.show();
+        toast.show();*/
     }
 
+    // apply radius
+    public void searchfInvent(View view){
+        FragmentSearchUp fragmentSearchUp = (FragmentSearchUp) getSupportFragmentManager().findFragmentByTag("Search");
+        fragmentSearchUp.sendRadiusToA();
+
+        tinyDB.putListObject("Markers", markers);
+        Intent i = new Intent(MapsActivity.this, TrackingService.class);
+        i.putExtra("lat", myL.getLatitude());
+        i.putExtra("lng", myL.getLongitude());
+        i.putExtra("radius", radius);
+        startService(i);
+
+        Toast toast = Toast.makeText(getApplicationContext(), "Service started", Toast.LENGTH_SHORT);
+        toast.show();
+
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
+        fragmentTransaction.commit();
+        FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
+        fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
+
+
+    }
+
+    @Override
+    public void getRadius(String r) {
+        radius = r;
+    }
 }
 
