@@ -262,8 +262,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         fragmentTransaction.commit();
         FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
         fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
-
-
     }
 
     @Override
