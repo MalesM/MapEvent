@@ -1,8 +1,10 @@
 package com.example.gospodin.inventator2;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
@@ -37,15 +39,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private String provider;
     public Location myL;
     private int firstZoom = 0, mapReady = 0;
-    private int mapReadySaved;
     private float zoomLevel = 16;
     private ArrayList<MarkerClass> markers = new ArrayList<MarkerClass>();
-    private boolean saved = true;
-    private int click = 0, drag = 0;
-    private double llat, llng;
+    private ArrayList<MarkerClass> filteredMarkers = new ArrayList<MarkerClass>();
     private Marker preparedMarker;
     static TinyDB tinyDB;
-    public MarkerClass markerClass;
+
+
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int num = intent.getIntExtra("HaveSome", 0);
+            if (num != 0){
+                filteredMarkers = tinyDB.getListObject("filteredMarkers", MarkerClass.class);
+                mMap.clear();
+                for(MarkerClass m : filteredMarkers){
+                    drawMarker(m);
+                }
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +104,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         if(tinyDB.getBoolean("haveMarkers")){
             for(MarkerClass m : markers){
-                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription()));
+                drawMarker(m);
+                //mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription()));
             }
         }
 
@@ -122,6 +136,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onResume() {
         super.onResume();
+
+        registerReceiver(receiver, new IntentFilter(TrackingService.NOTIFICATION));
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
@@ -136,6 +153,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onPause() {
         super.onPause();
         locationManager.removeUpdates(this);
+
+        unregisterReceiver(receiver);
 
         tinyDB.putListObject("Markers", markers);
         tinyDB.putBoolean("haveMarkers", true);
@@ -268,22 +287,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+    public void drawMarker(MarkerClass m){
+        mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription()));
+    }
+
     // filter with service
-    public void searchInventa(View view){
+    public void searchInvent(View view){
+        tinyDB.putListObject("Markers", markers);
         Intent i = new Intent(MapsActivity.this, TrackingService.class);
         i.putExtra("lat", myL.getLatitude());
         i.putExtra("lng", myL.getLongitude());
         startService(i);
+
+        Toast toast = Toast.makeText(getApplicationContext(), "Service started", Toast.LENGTH_SHORT);
+        toast.show();
     }
 
-    //filter with thread
-    public void searchInvent(View view){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-            }
-        }).start();
-    }
 }
 

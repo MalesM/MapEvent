@@ -8,7 +8,8 @@ import android.support.annotation.Nullable;
 import java.util.ArrayList;
 
 public class TrackingService extends IntentService{
-
+    private int num = 0;
+    public static final String NOTIFICATION = "om.example.gospodin.inventator2";
 
     public TrackingService() {
         super("TrackingService");
@@ -23,9 +24,20 @@ public class TrackingService extends IntentService{
         ArrayList<MarkerClass> allMarkers = MapsActivity.tinyDB.getListObject("Markers", MarkerClass.class);
 
         for(MarkerClass m : allMarkers){
-            if(m.distance(lat, lng, m.getLat(), m.getLng()) <=  200.0){
+            if(m.distance(lat, lng, m.getLat(), m.getLng()) <=  50.0){
                 searchMarkers.add(m);
             }
         }
+
+        num = searchMarkers.size();
+        MapsActivity.tinyDB.putListObject("filteredMarkers", searchMarkers);
+
+        sendMarkers();
+    }
+
+    public void sendMarkers(){
+        Intent i = new Intent(NOTIFICATION);
+        i.putExtra("HaveSome", num);
+        sendBroadcast(i);
     }
 }
