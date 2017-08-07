@@ -36,6 +36,7 @@
         android:layout_height="100dp"
         android:layout_weight="1"
         android:background="@android:color/white"
+        android:onClick="settingsInvent"
         android:src="@drawable/settings" />
 
 </LinearLayout>

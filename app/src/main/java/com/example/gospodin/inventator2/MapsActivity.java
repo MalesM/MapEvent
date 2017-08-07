@@ -29,15 +29,19 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 
+import static android.widget.Toast.makeText;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener,
-        FragmentCreateUp.GetData, FragmentCreateUp.SendMarkerInfo, FragmentSearchUp.SendRadius{
+        FragmentCreateUp.GetData, FragmentCreateUp.SendMarkerInfo, FragmentSearchUp.SendRadius,
+        FragmentSettingsUp.TrackingSettings{
 
     private GoogleMap mMap;
     private LocationManager locationManager;
     private Button invent_button, confirm_button, cancel_button, cancel_button2;
     private ImageButton settingsButton, searchButton;
     private String provider;
-    private String radius;
+    private String radius, radiusSettings;
+    private boolean startService;
     public Location myL;
     private int firstZoom = 0, mapReady = 0;
     private float zoomLevel = 16;
@@ -172,13 +176,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onProviderEnabled(String provider) {
-        Toast.makeText(this, "Enabled new provider " + provider,
+        makeText(this, "Enabled new provider " + provider,
                 Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onProviderDisabled(String provider) {
-        Toast.makeText(this, "Disabled provider " + provider,
+        makeText(this, "Disabled provider " + provider,
                 Toast.LENGTH_SHORT).show();
     }
 
@@ -248,6 +252,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
     }
 
+    public void cancelSInvent(View view){
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
+        fragmentTransaction.commit();
+        FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
+        fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
+    }
+
     //fully invent create
     public void finishInvent(View view){
 
@@ -301,16 +313,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         FragmentSearchDown fragmentSearchDown = new FragmentSearchDown();
         fragmentTransaction.replace(R.id.fragment_buttons, fragmentSearchDown);
-
-
-        /*tinyDB.putListObject("Markers", markers);
-        Intent i = new Intent(MapsActivity.this, TrackingService.class);
-        i.putExtra("lat", myL.getLatitude());
-        i.putExtra("lng", myL.getLongitude());
-        startService(i);
-
-        Toast toast = Toast.makeText(getApplicationContext(), "Service started", Toast.LENGTH_SHORT);
-        toast.show();*/
     }
 
     // apply radius
@@ -325,7 +327,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         i.putExtra("radius", radius);
         startService(i);
 
-        Toast toast = Toast.makeText(getApplicationContext(), "Service started", Toast.LENGTH_SHORT);
+        Toast toast = makeText(getApplicationContext(), "Service started", Toast.LENGTH_SHORT);
         toast.show();
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
@@ -333,13 +335,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         fragmentTransaction.commit();
         FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
         fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
+    }
 
+    //go to settings fragment
+    public void settingsInvent(View view){
+        FragmentSettingsUp fragmentSettingsUp = new FragmentSettingsUp();
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, fragmentSettingsUp, "Settings");
+        fragmentTransaction.addToBackStack(null); // mozda da se izbrise!!
+        fragmentTransaction.commit();
 
+        FragmentSettingsDown fragmentSettingsDown = new FragmentSettingsDown();
+        fragmentTransaction.replace(R.id.fragment_buttons, fragmentSettingsDown);
+    }
+
+    public void saveSettings(View view){
+        FragmentSettingsUp fragmentSettingsUp = (FragmentSettingsUp) getSupportFragmentManager().findFragmentByTag("Settings");
+        fragmentSettingsUp.getSettings();
+
+        if(startService){
+            Toast toast = Toast.makeText(getApplicationContext(), "Tracking started", Toast.LENGTH_SHORT);
+            toast.show();
+        }
     }
 
     @Override
     public void getRadius(String r) {
         radius = r;
+    }
+
+    @Override
+    public void setTracking(String radius, boolean track) {
+        radiusSettings = radius;
+        startService = track;
     }
 }
 
