@@ -48,7 +48,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private String radius, radiusSettings;
     private boolean startService;
     public Location myL;
-    private int firstZoom = 0, mapReady = 0;
+    private int firstZoom = 0, mapReady = 0, circleDraw = 0;
     private float zoomLevel = 16;
     private ArrayList<MarkerClass> markers = new ArrayList<MarkerClass>();
     private ArrayList<MarkerClass> filteredMarkers = new ArrayList<MarkerClass>();
@@ -157,7 +157,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onPause() {
         super.onPause();
 
-        filterMarkers(markers);
+
         locationManager.removeUpdates(this);
 
         unregisterReceiver(receiver);
@@ -166,6 +166,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         tinyDB.putBoolean("haveMarkers", true);
 
         if(tinyDB.getBoolean("Switch")){
+            filterMarkers(markers);
             scheduleAlarrm();
         }else{cancelAlarm();}
     }
@@ -371,16 +372,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
-        if(startService){
+        if(startService ){
             Toast toast = Toast.makeText(getApplicationContext(), "Tracking started", Toast.LENGTH_SHORT);
             toast.show();
 
-            circle = mMap.addCircle(new CircleOptions()
-                    .center(new LatLng(myL.getLatitude(), myL.getLongitude()))
-                    .radius(Double.parseDouble(radiusSettings))
-                    .strokeColor(Color.RED)
-                    .fillColor(Color.BLUE));
-        } else{circle.remove();}
+            if(circleDraw == 0) {
+                circleDraw = 1;
+                circle = mMap.addCircle(new CircleOptions()
+                        .center(new LatLng(myL.getLatitude(), myL.getLongitude()))
+                        .radius(Double.parseDouble(radiusSettings))
+                        .strokeColor(Color.RED)
+                        .fillColor(Color.BLUE));
+            }else{
+                circleDraw = 0;
+                circle.remove();
+                circle = mMap.addCircle(new CircleOptions()
+                        .center(new LatLng(myL.getLatitude(), myL.getLongitude()))
+                        .radius(Double.parseDouble(radiusSettings))
+                        .strokeColor(Color.RED)
+                        .fillColor(Color.BLUE));
+
+            }
+        } else{if(circleDraw == 1)circle.remove();}
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
