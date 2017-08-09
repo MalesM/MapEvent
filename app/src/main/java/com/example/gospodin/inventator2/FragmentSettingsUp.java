@@ -32,6 +32,11 @@ public class FragmentSettingsUp extends Fragment{
         seekBar2 = (SeekBar) v.findViewById(R.id.seekBar2);
         seekBar2.setMax(1000);
 
+        if(MapsActivity.tinyDB.getString("radiusSettings").isEmpty()){}else {
+            distanceTextSettings.setText("" + MapsActivity.tinyDB.getString("radiusSettings"));
+            seekBar2.setProgress(Integer.parseInt(MapsActivity.tinyDB.getString("radiusSettings")));
+            switch1.setChecked(MapsActivity.tinyDB.getBoolean("Switch"));
+        }
         seekBar2.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {

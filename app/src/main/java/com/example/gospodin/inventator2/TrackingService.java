@@ -10,7 +10,7 @@ import java.util.ArrayList;
 public class TrackingService extends IntentService{
     private int num = 0;
     private String radius;
-    public static final String NOTIFICATION = "om.example.gospodin.inventator2";
+    public static final String NOTIFICATION = "com.example.gospodin.inventator2";
 
     public TrackingService() {
         super("TrackingService");

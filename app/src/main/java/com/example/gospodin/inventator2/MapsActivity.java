@@ -1,11 +1,14 @@
 package com.example.gospodin.inventator2;
 
 import android.Manifest;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -23,6 +26,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -48,6 +53,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private ArrayList<MarkerClass> markers = new ArrayList<MarkerClass>();
     private ArrayList<MarkerClass> filteredMarkers = new ArrayList<MarkerClass>();
     private Marker preparedMarker;
+    private Circle circle;
     static TinyDB tinyDB;
 
 
@@ -134,7 +140,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onResume() {
         super.onResume();
-
+        cancelAlarm();
         registerReceiver(receiver, new IntentFilter(TrackingService.NOTIFICATION));
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -150,12 +156,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onPause() {
         super.onPause();
+
+        filterMarkers(markers);
         locationManager.removeUpdates(this);
 
         unregisterReceiver(receiver);
 
         tinyDB.putListObject("Markers", markers);
         tinyDB.putBoolean("haveMarkers", true);
+
+        if(tinyDB.getBoolean("Switch")){
+            scheduleAlarrm();
+        }else{cancelAlarm();}
     }
 
     @Override
@@ -349,14 +361,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         fragmentTransaction.replace(R.id.fragment_buttons, fragmentSettingsDown);
     }
 
+    // save and track in background
     public void saveSettings(View view){
         FragmentSettingsUp fragmentSettingsUp = (FragmentSettingsUp) getSupportFragmentManager().findFragmentByTag("Settings");
         fragmentSettingsUp.getSettings();
 
+        tinyDB.putBoolean("Switch", startService);
+        tinyDB.putString("radiusSettings", radiusSettings);
+
+
+
         if(startService){
             Toast toast = Toast.makeText(getApplicationContext(), "Tracking started", Toast.LENGTH_SHORT);
             toast.show();
-        }
+
+            circle = mMap.addCircle(new CircleOptions()
+                    .center(new LatLng(myL.getLatitude(), myL.getLongitude()))
+                    .radius(Double.parseDouble(radiusSettings))
+                    .strokeColor(Color.RED)
+                    .fillColor(Color.BLUE));
+        } else{circle.remove();}
+
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
+        fragmentTransaction.commit();
+        FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
+        fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
     }
 
     @Override
@@ -368,6 +398,33 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void setTracking(String radius, boolean track) {
         radiusSettings = radius;
         startService = track;
+    }
+
+    public void scheduleAlarrm(){
+        Intent intent = new Intent(getApplicationContext(), MyAlarmReceiver.class);
+        final PendingIntent pendingIntent = PendingIntent.getBroadcast(this, MyAlarmReceiver.REQUEST_CODE,
+                intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        long firstMillis = System.currentTimeMillis();
+        AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+
+        alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, firstMillis, 1000*20, pendingIntent);
+    }
+    public void cancelAlarm() {
+        Intent intent = new Intent(getApplicationContext(), MyAlarmReceiver.class);
+        final PendingIntent pIntent = PendingIntent.getBroadcast(this, MyAlarmReceiver.REQUEST_CODE,
+                intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+        alarm.cancel(pIntent);
+    }
+
+    public void filterMarkers(ArrayList<MarkerClass> markersAll){
+        filteredMarkers.clear();
+        for(MarkerClass m : markersAll){
+            if(m.distance(myL.getLatitude(), myL.getLongitude(), m.getLat(), m.getLng()) <=  Integer.parseInt(radiusSettings)){
+                filteredMarkers.add(m);
+            }
+        }
+        tinyDB.putListObject("filteredMarkers", filteredMarkers);
     }
 }
 
