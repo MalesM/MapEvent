@@ -9,8 +9,8 @@
         android:layout_width="50dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
+        android:gravity="center"
         android:text="Drag for Precise"
-        android:textAlignment="center"
         android:textSize="18sp" />
 
     <Button
