@@ -12,7 +12,7 @@
         android:layout_weight="1"
         android:background="@android:color/white"
         android:onClick="searchInvent"
-        android:src="@drawable/search" />
+        android:src="@drawable/search3" />
 
     <Button
         android:id="@+id/invent_button"
@@ -37,6 +37,6 @@
         android:layout_weight="1"
         android:background="@android:color/white"
         android:onClick="settingsInvent"
-        android:src="@drawable/settings" />
+        android:src="@drawable/settings3" />
 
 </LinearLayout>
