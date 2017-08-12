@@ -103,6 +103,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
     }
+    
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -265,6 +266,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
     }
 
+    //Cancel in settings window
     public void cancelSInvent(View view){
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
@@ -402,17 +404,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
     }
 
+    //get radius from search Fragment
     @Override
     public void getRadius(String r) {
         radius = r;
     }
 
+    //get information from settings Fragment
     @Override
     public void setTracking(String radius, boolean track) {
         radiusSettings = radius;
         startService = track;
     }
 
+    //service check for new Invents after some time
     public void scheduleAlarrm(){
         Intent intent = new Intent(getApplicationContext(), MyAlarmReceiver.class);
         final PendingIntent pendingIntent = PendingIntent.getBroadcast(this, MyAlarmReceiver.REQUEST_CODE,
@@ -422,6 +427,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, firstMillis, 1000*60*2, pendingIntent);
     }
+
+    //cancel service
     public void cancelAlarm() {
         Intent intent = new Intent(getApplicationContext(), MyAlarmReceiver.class);
         final PendingIntent pIntent = PendingIntent.getBroadcast(this, MyAlarmReceiver.REQUEST_CODE,
@@ -430,6 +437,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         alarm.cancel(pIntent);
     }
 
+    //filter Invents in search radius
     public void filterMarkers(ArrayList<MarkerClass> markersAll){
         filteredMarkers.clear();
         for(MarkerClass m : markersAll){
