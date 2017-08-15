@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -103,7 +104,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
     }
-    
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -141,6 +141,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onResume() {
         super.onResume();
+        Log.v("Service", "OnResume ");
+
         cancelAlarm();
         registerReceiver(receiver, new IntentFilter(TrackingService.NOTIFICATION));
 
@@ -158,7 +160,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onPause() {
         super.onPause();
 
-
+        Log.v("Service", "OnPause ");
         locationManager.removeUpdates(this);
 
         unregisterReceiver(receiver);
