@@ -211,6 +211,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 FragmentConfirm fragmentConfirm = new FragmentConfirm();
                 FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.replace(R.id.fragment_buttons, fragmentConfirm);
+                fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
                 mMap.setOnMapClickListener(null);
             }
@@ -219,6 +220,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         FragmentMapClick fragmentMapClick = new FragmentMapClick();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragment_buttons, fragmentMapClick);
+        fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
 
