@@ -41,7 +41,9 @@ public class TrackInvents extends IntentService implements LocationListener {
 
         tdb = new TinyDB(getApplicationContext());
         //preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        trackNew = tdb.getListObject("filteredMarkers", MarkerClass.class);
+        if(!tdb.getBoolean("noFiltered")) {
+            trackNew = tdb.getListObject("filteredMarkers", MarkerClass.class);
+        }else{trackNew = new ArrayList<>();}
         all = tdb.getListObject("Markers", MarkerClass.class);
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);

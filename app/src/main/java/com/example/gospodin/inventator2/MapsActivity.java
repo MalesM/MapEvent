@@ -50,6 +50,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private boolean startService;
     public Location myL;
     private int firstZoom = 0, mapReady = 0, circleDraw = 0;
+    private int backPress = 0;
     private float zoomLevel = 16;
     private ArrayList<MarkerClass> markers = new ArrayList<MarkerClass>();
     private ArrayList<MarkerClass> filteredMarkers = new ArrayList<MarkerClass>();
@@ -202,31 +203,35 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Toast.LENGTH_SHORT).show();
     }
 
+
     //Click invent on home screen
     public void createInvent(View view){
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
+                backPress = 2;
                 preparedMarker = mMap.addMarker(new MarkerOptions().position(latLng).draggable(true));
                 FragmentConfirm fragmentConfirm = new FragmentConfirm();
                 FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.replace(R.id.fragment_buttons, fragmentConfirm);
-                fragmentTransaction.addToBackStack(null);
+                //fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
                 mMap.setOnMapClickListener(null);
             }
         });
 
+        backPress = 1;
         FragmentMapClick fragmentMapClick = new FragmentMapClick();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragment_buttons, fragmentMapClick);
-        fragmentTransaction.addToBackStack(null);
+        //fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
 
     //Go to details after pick location
     public void inventDetails(View view){
 
+        backPress = 3;
         preparedMarker.setDraggable(false);
         FragmentCreateUp fragmentCreateUp = new FragmentCreateUp();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
@@ -242,6 +247,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //Cancel after first press
     public void cancelCreation(View view){
+        backPress = 0;
         preparedMarker.remove();
         FragmentButtonsHome fragmentButtonsHome= new FragmentButtonsHome();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
@@ -251,7 +257,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //Cancel in detail invent
     public void cancelInvent(View view){
-
+        backPress = 0;
         preparedMarker.remove();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
@@ -263,6 +269,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //Cancel in search window
     public void cancelfInvent(View view){
+        backPress = 0;
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
         fragmentTransaction.commit();
@@ -272,6 +279,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //Cancel in settings window
     public void cancelSInvent(View view){
+        backPress = 0;
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
         fragmentTransaction.commit();
@@ -282,6 +290,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //fully invent create
     public void finishInvent(View view){
 
+        backPress = 0;
         FragmentCreateUp fragmentCreateUp = (FragmentCreateUp) getSupportFragmentManager().findFragmentByTag("Details");
         fragmentCreateUp.sendMarkerInfo();
 
@@ -324,6 +333,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     // go to search fragment
     public void searchInvent(View view){
+        backPress = 4;
         FragmentSearchUp fragmentSearchUp = new FragmentSearchUp();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, fragmentSearchUp, "Search");
@@ -336,6 +346,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     // apply radius
     public void searchfInvent(View view){
+        backPress = 0;
         FragmentSearchUp fragmentSearchUp = (FragmentSearchUp) getSupportFragmentManager().findFragmentByTag("Search");
         fragmentSearchUp.sendRadiusToA();
 
@@ -358,6 +369,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //go to settings fragment
     public void settingsInvent(View view){
+        backPress = 5;
         FragmentSettingsUp fragmentSettingsUp = new FragmentSettingsUp();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, fragmentSettingsUp, "Settings");
@@ -370,6 +382,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     // save and track in background
     public void saveSettings(View view){
+        backPress = 0;
         FragmentSettingsUp fragmentSettingsUp = (FragmentSettingsUp) getSupportFragmentManager().findFragmentByTag("Settings");
         fragmentSettingsUp.getSettings();
 
@@ -443,13 +456,65 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //filter Invents in search radius
     public void filterMarkers(ArrayList<MarkerClass> markersAll){
+        int i = 0;
         filteredMarkers.clear();
         for(MarkerClass m : markersAll){
             if(m.distance(myL.getLatitude(), myL.getLongitude(), m.getLat(), m.getLng()) <=  Integer.parseInt(radiusSettings)){
                 filteredMarkers.add(m);
+                i++;
             }
         }
-        tinyDB.putListObject("filteredMarkers", filteredMarkers);
+        if(i != 0) {
+            tinyDB.putListObject("filteredMarkers", filteredMarkers);
+        }else{tinyDB.putBoolean("noFiltered", true);}
+    }
+
+    @Override
+    public void onBackPressed() {
+        switch (backPress){
+            case 0: finish();
+                    break;
+            case 1:
+                backPress = 0;
+                FragmentButtonsHome fragmentButtonsHome= new FragmentButtonsHome();
+                FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
+                fragmentTransaction.commit();
+                break;
+            case 2:
+                backPress = 0;
+                preparedMarker.remove();
+                fragmentButtonsHome = new FragmentButtonsHome();
+                fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
+                fragmentTransaction.commit();
+                break;
+            case 3:
+                backPress = 0;
+                preparedMarker.remove();
+                fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
+                fragmentTransaction.commit();
+                fragmentButtonsHome = new FragmentButtonsHome();
+                fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
+                break;
+            case 4:
+                backPress = 0;
+                fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
+                fragmentTransaction.commit();
+                fragmentButtonsHome = new FragmentButtonsHome();
+                fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
+                break;
+            case 5:
+                backPress = 0;
+                fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
+                fragmentTransaction.commit();
+                fragmentButtonsHome = new FragmentButtonsHome();
+                fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
+                break;
+        }
     }
 }
 
