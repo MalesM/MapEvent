@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -28,10 +27,14 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.Circle;
-import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
@@ -56,7 +59,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private ArrayList<MarkerClass> filteredMarkers = new ArrayList<MarkerClass>();
     private Marker preparedMarker;
     private Circle circle;
-    static TinyDB tinyDB;
+    public DatabaseReference flagsFB, markersFB, searchMarkers;
 
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -64,7 +67,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         public void onReceive(Context context, Intent intent) {
             int num = intent.getIntExtra("HaveSome", 0);
             if (num != 0){
-                filteredMarkers = tinyDB.getListObject("filteredMarkers", MarkerClass.class);
+                searchMarkers.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for(DataSnapshot post : dataSnapshot.getChildren()){
+                            MarkerClass mc = post.getValue(MarkerClass.class);
+                            filteredMarkers.add(mc);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
                 mMap.clear();
                 for(MarkerClass m : filteredMarkers){
                     drawMarker(m);
@@ -78,7 +94,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-        tinyDB = new TinyDB(getApplicationContext());
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        markersFB = database.getReference("Markers");
+        flagsFB = database.getReference("Flags");
+        searchMarkers = database.getReference("SearchMarkers");
+
+        flagsFB.child("haveMarkers").setValue(true);
 
         initViews();
 
@@ -112,12 +133,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
 
-        if(tinyDB.getBoolean("haveMarkers")){
-            for(MarkerClass m : markers){
+        if(!markers.isEmpty()){
+            for(MarkerClass m : markers)
                 drawMarker(m);
-                //mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription()));
-            }
         }
+
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
@@ -144,6 +164,35 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onResume();
         Log.v("Service", "OnResume ");
 
+        flagsFB.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                boolean haveM = dataSnapshot.child("haveMarkers").getValue(boolean.class);
+                if(haveM){
+                    markersFB.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            for(DataSnapshot post : dataSnapshot.getChildren()){
+                                MarkerClass mc = post.getValue(MarkerClass.class);
+                                markers.add(mc);
+                                drawMarker(mc);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
         cancelAlarm();
         registerReceiver(receiver, new IntentFilter(TrackingService.NOTIFICATION));
 
@@ -152,9 +201,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         locationManager.requestLocationUpdates(provider, 400, 1, this);
 
-        if(tinyDB.getBoolean("haveMarkers")){
-            markers = tinyDB.getListObject("Markers", MarkerClass.class);
-        }
     }
 
     @Override
@@ -166,13 +212,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         unregisterReceiver(receiver);
 
-        tinyDB.putListObject("Markers", markers);
+        /*tinyDB.putListObject("Markers", markers);
         tinyDB.putBoolean("haveMarkers", true);
 
         if(tinyDB.getBoolean("Switch")){
             filterMarkers(markers);
             scheduleAlarrm();
-        }else{cancelAlarm();}
+        }else{cancelAlarm();}*/
     }
 
     @Override
@@ -294,8 +340,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         FragmentCreateUp fragmentCreateUp = (FragmentCreateUp) getSupportFragmentManager().findFragmentByTag("Details");
         fragmentCreateUp.sendMarkerInfo();
 
-        markers.add(new MarkerClass(preparedMarker.getPosition().latitude, preparedMarker.getPosition().longitude,
-                preparedMarker.getTitle(), preparedMarker.getSnippet()));
+        MarkerClass mc = new MarkerClass(preparedMarker.getPosition().latitude, preparedMarker.getPosition().longitude,
+                preparedMarker.getTitle(), preparedMarker.getSnippet());
+        markers.add(mc);
+        markersFB.push().setValue(mc);
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
@@ -350,7 +398,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         FragmentSearchUp fragmentSearchUp = (FragmentSearchUp) getSupportFragmentManager().findFragmentByTag("Search");
         fragmentSearchUp.sendRadiusToA();
 
-        tinyDB.putListObject("Markers", markers);
         Intent i = new Intent(MapsActivity.this, TrackingService.class);
         i.putExtra("lat", myL.getLatitude());
         i.putExtra("lng", myL.getLongitude());
@@ -368,7 +415,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     //go to settings fragment
-    public void settingsInvent(View view){
+    /*public void settingsInvent(View view){
         backPress = 5;
         FragmentSettingsUp fragmentSettingsUp = new FragmentSettingsUp();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
@@ -378,10 +425,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         FragmentSettingsDown fragmentSettingsDown = new FragmentSettingsDown();
         fragmentTransaction.replace(R.id.fragment_buttons, fragmentSettingsDown);
-    }
+    }*/
 
     // save and track in background
-    public void saveSettings(View view){
+   /* public void saveSettings(View view){
         backPress = 0;
         FragmentSettingsUp fragmentSettingsUp = (FragmentSettingsUp) getSupportFragmentManager().findFragmentByTag("Settings");
         fragmentSettingsUp.getSettings();
@@ -419,7 +466,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         fragmentTransaction.commit();
         FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
         fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
-    }
+    }*/
 
     //get radius from search Fragment
     @Override
@@ -455,7 +502,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     //filter Invents in search radius
-    public void filterMarkers(ArrayList<MarkerClass> markersAll){
+    /*public void filterMarkers(ArrayList<MarkerClass> markersAll){
         int i = 0;
         filteredMarkers.clear();
         for(MarkerClass m : markersAll){
@@ -467,7 +514,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if(i != 0) {
             tinyDB.putListObject("filteredMarkers", filteredMarkers);
         }else{tinyDB.putBoolean("noFiltered", true);}
-    }
+    }*/
 
     @Override
     public void onBackPressed() {

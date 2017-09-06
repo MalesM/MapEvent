@@ -9,6 +9,7 @@ public class MarkerClass {
     private double lat, lng;
     private String title="", description="";
 
+    public MarkerClass(){};
 
     public MarkerClass(Double lat, Double lng, String title, String description){
         this.lat = lat;

@@ -1,19 +1,12 @@
 package com.example.gospodin.inventator2;
 
-import android.Manifest;
 import android.app.IntentService;
-import android.app.NotificationManager;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -24,8 +17,6 @@ public class TrackInvents extends IntentService implements LocationListener {
     private LocationManager locationManager;
     private String provider;
     public Location myL;
-    //private SharedPreferences preferences;
-    private static TinyDB tdb;
     private static ArrayList<MarkerClass> trackNew;
     private static ArrayList<MarkerClass> all;
 
@@ -39,7 +30,7 @@ public class TrackInvents extends IntentService implements LocationListener {
     public void onCreate() {
         super.onCreate();
 
-        tdb = new TinyDB(getApplicationContext());
+        /*tdb = new TinyDB(getApplicationContext());
         //preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         if(!tdb.getBoolean("noFiltered")) {
             trackNew = tdb.getListObject("filteredMarkers", MarkerClass.class);
@@ -62,13 +53,13 @@ public class TrackInvents extends IntentService implements LocationListener {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-        locationManager.requestLocationUpdates(provider, 400, 1, this);
+        locationManager.requestLocationUpdates(provider, 400, 1, this);*/
     }
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
         //String radiusS = preferences.getString("radiusSettings", "");
-        String radiusS2 = tdb.getString("radiusSettings");
+       /* String radiusS2 = tdb.getString("radiusSettings");
         radius = Integer.parseInt(radiusS2);
         int a = 0;
         int b = 0;
@@ -100,12 +91,12 @@ public class TrackInvents extends IntentService implements LocationListener {
             NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             // notificationID allows you to update the notification later on.
             mNotificationManager.notify(12345, builder.build());
-        }
+        }*/
 
         Log.v("Service", "Radius is "+radius);
-        Log.v("Service", "A is "+a);
+       /* Log.v("Service", "A is "+a);
         Log.v("Service", "b is "+b);
-        Log.v("Service", "Running "+ myL.getLongitude()+" "+myL.getLatitude());
+        Log.v("Service", "Running "+ myL.getLongitude()+" "+myL.getLatitude());*/
 
     }
 
