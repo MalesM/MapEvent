@@ -17,11 +17,12 @@ public class TrackingService extends IntentService{
     private int num = 0;
     private String radius;
     public static final String NOTIFICATION = "com.example.gospodin.inventator2";
-    private FirebaseDatabase database = FirebaseDatabase.getInstance();
-    private DatabaseReference flagsFB = database.getReference("Flags");
-    private DatabaseReference markersFB = database.getReference("Markers");
-    private DatabaseReference fmarkersFB = database.getReference("SearchMarkers");
-    private ArrayList<MarkerClass> allMarkers = new ArrayList<>();
+    public FirebaseDatabase database = FirebaseDatabase.getInstance();
+    public DatabaseReference flagsFB = database.getReference("Flags");
+    public DatabaseReference markersFB = database.getReference("Markers");
+    public DatabaseReference fmarkersFB = database.getReference("SearchMarkers");
+    private final ArrayList<MarkerClass> allMarkers = new ArrayList<>();
+    private int jot=0;
 
     public TrackingService() {
         super("TrackingService");
@@ -29,59 +30,34 @@ public class TrackingService extends IntentService{
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
-        double lat = intent.getDoubleExtra("lat", 0);
-        double lng = intent.getDoubleExtra("lng", 0);
+        final double lat = intent.getDoubleExtra("lat", 0);
+        final double lng = intent.getDoubleExtra("lng", 0);
         radius = intent.getStringExtra("radius");
-        int radiusInt = Integer.parseInt(radius);
+        final int radiusInt = Integer.parseInt(radius);
 
-        ArrayList<MarkerClass> searchMarkers = new ArrayList<>();
-        flagsFB.addListenerForSingleValueEvent(new ValueEventListener() {
+        markersFB.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                boolean haveM = dataSnapshot.child("haveMarkers").getValue(boolean.class);
-                if(haveM){
-                    markersFB.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            for(DataSnapshot post : dataSnapshot.getChildren()){
-                                MarkerClass mc = post.getValue(MarkerClass.class);
-                                allMarkers.add(mc);
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
+                for(DataSnapshot post : dataSnapshot.getChildren()){
+                    MarkerClass m = post.getValue(MarkerClass.class);
+                    if(m.distance(lat, lng, m.getLat(), m.getLng()) <=  radiusInt){
+                        fmarkersFB.push().setValue(m);
+                    }
                 }
+                sendMarkers();
             }
-
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
             }
         });
 
-        for(MarkerClass m : allMarkers){
-            if(m.distance(lat, lng, m.getLat(), m.getLng()) <=  radiusInt){
-                searchMarkers.add(m);
-            }
-        }
 
-        num = searchMarkers.size();
-        if(!searchMarkers.isEmpty()){
-            for(MarkerClass m : searchMarkers){
-                fmarkersFB.push().setValue(m);
-            }
-        }
 
-        sendMarkers();
     }
 
     public void sendMarkers(){
         Intent i = new Intent(NOTIFICATION);
-        i.putExtra("HaveSome", num);
+        //i.putExtra("HaveSome", num);
         sendBroadcast(i);
     }
 }

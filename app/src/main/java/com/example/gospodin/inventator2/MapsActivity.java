@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -40,7 +39,7 @@ import java.util.ArrayList;
 
 import static android.widget.Toast.makeText;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener,
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
         FragmentCreateUp.GetData, FragmentCreateUp.SendMarkerInfo, FragmentSearchUp.SendRadius,
         FragmentSettingsUp.TrackingSettings{
 
@@ -65,27 +64,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            int num = intent.getIntExtra("HaveSome", 0);
-            if (num != 0){
-                searchMarkers.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        for(DataSnapshot post : dataSnapshot.getChildren()){
-                            MarkerClass mc = post.getValue(MarkerClass.class);
-                            filteredMarkers.add(mc);
-                        }
+            //int num = intent.getIntExtra("HaveSome", 0);
+            searchMarkers.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for(DataSnapshot post : dataSnapshot.getChildren()){
+                         drawMarker(post.getValue(MarkerClass.class));
                     }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
-                mMap.clear();
-                for(MarkerClass m : filteredMarkers){
-                    drawMarker(m);
                 }
-            }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            });
         }
     };
 
@@ -99,11 +89,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         flagsFB = database.getReference("Flags");
         searchMarkers = database.getReference("SearchMarkers");
 
-        flagsFB.child("haveMarkers").setValue(true);
 
         initViews();
-
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         SupportMapFragment mMapFragment = SupportMapFragment.newInstance();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
@@ -113,30 +100,109 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
         fragmentTransaction.add(R.id.fragment_buttons, fragmentButtonsHome);
 
-        Criteria criteria = new Criteria();
-        provider = locationManager.getBestProvider(criteria, false);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        Location location = locationManager.getLastKnownLocation(provider);
+        if(locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, new LocationListener() {
+                @Override
+                public void onLocationChanged(Location location) {
+                    myL = location;
+                    Log.v("Location", ""+myL.getLatitude()+"  "+myL.getLongitude());
+                    if(mapReady == 1 && firstZoom == 0){
+                        firstZoom = 1;
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(myL.getLatitude(), myL.getLongitude()), 16));
+                    }
+                }
 
-        if (location != null) {
-            System.out.println("Provider " + provider + " has been selected.");
-            onLocationChanged(location);
+                @Override
+                public void onStatusChanged(String s, int i, Bundle bundle) {
+
+                }
+
+                @Override
+                public void onProviderEnabled(String s) {
+
+                }
+
+                @Override
+                public void onProviderDisabled(String s) {
+
+                }
+            });
+        }
+        else if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
+                @Override
+                public void onLocationChanged(Location location) {
+                    myL = location;
+                    Log.v("Location", ""+myL.getLatitude()+"  "+myL.getLongitude());
+                    if(mapReady == 1 && firstZoom == 0) {
+                        firstZoom = 1;
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(myL.getLatitude(), myL.getLongitude()), 16));
+                    }
+                }
+
+                @Override
+                public void onStatusChanged(String s, int i, Bundle bundle) {
+
+                }
+
+                @Override
+                public void onProviderEnabled(String s) {
+
+                }
+
+                @Override
+                public void onProviderDisabled(String s) {
+
+                }
+            });
         }
 
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        Log.v("Service", "MAP_READY ");
         mapReady = 1;
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
 
-        if(!markers.isEmpty()){
-            for(MarkerClass m : markers)
-                drawMarker(m);
-        }
+        flagsFB.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                boolean haveM = dataSnapshot.child("haveMarkers").getValue(boolean.class);
+                if(haveM){
+                    markersFB.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            for(DataSnapshot post : dataSnapshot.getChildren()){
+                                drawMarker(post.getValue(MarkerClass.class));
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
 
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -164,42 +230,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onResume();
         Log.v("Service", "OnResume ");
 
-        flagsFB.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                boolean haveM = dataSnapshot.child("haveMarkers").getValue(boolean.class);
-                if(haveM){
-                    markersFB.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            for(DataSnapshot post : dataSnapshot.getChildren()){
-                                MarkerClass mc = post.getValue(MarkerClass.class);
-                                markers.add(mc);
-                                drawMarker(mc);
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-        cancelAlarm();
+        //cancelAlarm();
         registerReceiver(receiver, new IntentFilter(TrackingService.NOTIFICATION));
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        locationManager.requestLocationUpdates(provider, 400, 1, this);
 
     }
 
@@ -208,7 +241,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onPause();
 
         Log.v("Service", "OnPause ");
-        locationManager.removeUpdates(this);
+        Log.v("Service", ""+myL.getLatitude()+" "+myL.getLongitude());
 
         unregisterReceiver(receiver);
 
@@ -219,34 +252,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             filterMarkers(markers);
             scheduleAlarrm();
         }else{cancelAlarm();}*/
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        double lat = location.getLatitude();
-        double lng = location.getLongitude();
-        myL = location;
-        if(firstZoom == 0 && mapReady == 1){
-            firstZoom = 1;
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat,lng),zoomLevel));
-        }
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-        makeText(this, "Enabled new provider " + provider,
-                Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-        makeText(this, "Disabled provider " + provider,
-                Toast.LENGTH_SHORT).show();
     }
 
 
@@ -342,7 +347,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         MarkerClass mc = new MarkerClass(preparedMarker.getPosition().latitude, preparedMarker.getPosition().longitude,
                 preparedMarker.getTitle(), preparedMarker.getSnippet());
-        markers.add(mc);
+
         markersFB.push().setValue(mc);
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
@@ -397,6 +402,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         backPress = 0;
         FragmentSearchUp fragmentSearchUp = (FragmentSearchUp) getSupportFragmentManager().findFragmentByTag("Search");
         fragmentSearchUp.sendRadiusToA();
+        searchMarkers.removeValue();
+        mMap.clear();
 
         Intent i = new Intent(MapsActivity.this, TrackingService.class);
         i.putExtra("lat", myL.getLatitude());
