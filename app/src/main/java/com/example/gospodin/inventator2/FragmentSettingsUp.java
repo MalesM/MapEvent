@@ -11,6 +11,12 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 public class FragmentSettingsUp extends Fragment{
 
     TextView distanceTextSettings;
@@ -27,16 +33,39 @@ public class FragmentSettingsUp extends Fragment{
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.settings_up_fragment, container, false);
 
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference flagsFB = database.getReference("Flags");
         distanceTextSettings = (TextView) v.findViewById(R.id.distanceTextSettings);
         switch1 = (Switch) v.findViewById(R.id.switch1);
         seekBar2 = (SeekBar) v.findViewById(R.id.seekBar2);
         seekBar2.setMax(1000);
 
-        /*if(MapsActivity.tinyDB.getString("radiusSettings").isEmpty()){}else {
-            distanceTextSettings.setText("" + MapsActivity.tinyDB.getString("radiusSettings"));
-            seekBar2.setProgress(Integer.parseInt(MapsActivity.tinyDB.getString("radiusSettings")));
-            switch1.setChecked(MapsActivity.tinyDB.getBoolean("Switch"));
-        }*/
+        flagsFB.child("settingsRadius").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                int i = dataSnapshot.getValue(Integer.class);
+                distanceTextSettings.setText(""+i);
+                seekBar2.setProgress(i);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        flagsFB.child("settingsSwitch").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                switch1.setChecked(dataSnapshot.getValue(Boolean.class));
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
         seekBar2.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {

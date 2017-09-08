@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -26,6 +27,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -64,7 +66,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            //int num = intent.getIntExtra("HaveSome", 0);
             searchMarkers.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
@@ -422,7 +423,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     //go to settings fragment
-    /*public void settingsInvent(View view){
+    public void settingsInvent(View view){
         backPress = 5;
         FragmentSettingsUp fragmentSettingsUp = new FragmentSettingsUp();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
@@ -432,18 +433,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         FragmentSettingsDown fragmentSettingsDown = new FragmentSettingsDown();
         fragmentTransaction.replace(R.id.fragment_buttons, fragmentSettingsDown);
-    }*/
+    }
 
     // save and track in background
-   /* public void saveSettings(View view){
+    public void saveSettings(View view){
         backPress = 0;
         FragmentSettingsUp fragmentSettingsUp = (FragmentSettingsUp) getSupportFragmentManager().findFragmentByTag("Settings");
         fragmentSettingsUp.getSettings();
 
-        tinyDB.putBoolean("Switch", startService);
-        tinyDB.putString("radiusSettings", radiusSettings);
-
-
+        flagsFB.child("settingsSwitch").setValue(startService);
+        flagsFB.child("settingsRadius").setValue(Integer.parseInt(radiusSettings));
 
         if(startService ){
             Toast toast = Toast.makeText(getApplicationContext(), "Tracking started", Toast.LENGTH_SHORT);
@@ -473,7 +472,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         fragmentTransaction.commit();
         FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
         fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
-    }*/
+    }
 
     //get radius from search Fragment
     @Override
