@@ -252,10 +252,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onPause();
 
         Log.v("Service", "OnPause ");
-        Log.v("Service", ""+myL.getLatitude()+" "+myL.getLongitude());
+        Log.v(TAG, ""+myL.getLatitude()+" "+myL.getLongitude());
 
         unregisterReceiver(receiver);
-
 
         if(startService){
             markersFB.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -523,7 +522,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         long firstMillis = System.currentTimeMillis();
         AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
 
-        alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, firstMillis, 1000*60, pendingIntent);
+        alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, firstMillis, 1000*20, pendingIntent);
     }
 
     //cancel service
