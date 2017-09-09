@@ -3,24 +3,15 @@ package com.example.gospodin.inventator2;
 import android.app.IntentService;
 import android.content.Intent;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import java.util.ArrayList;
-
-public class TrackInvents extends IntentService implements LocationListener {
+public class TrackInvents extends IntentService  {
 
     private int radius;
     private LocationManager locationManager;
-    private String provider;
     public Location myL;
-    private static ArrayList<MarkerClass> trackNew;
-    private static ArrayList<MarkerClass> all;
-
-
 
     public TrackInvents() {
         super("TrackInvents");
@@ -97,26 +88,6 @@ public class TrackInvents extends IntentService implements LocationListener {
        /* Log.v("Service", "A is "+a);
         Log.v("Service", "b is "+b);
         Log.v("Service", "Running "+ myL.getLongitude()+" "+myL.getLatitude());*/
-
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        myL = location;
-    }
-
-    @Override
-    public void onStatusChanged(String s, int i, Bundle bundle) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String s) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String s) {
 
     }
 

@@ -37,30 +37,25 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
-
 import static android.widget.Toast.makeText;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
         FragmentCreateUp.GetData, FragmentCreateUp.SendMarkerInfo, FragmentSearchUp.SendRadius,
         FragmentSettingsUp.TrackingSettings{
 
+    public static final String TAG = "debuger";
     private GoogleMap mMap;
     private LocationManager locationManager;
     private Button invent_button, confirm_button, cancel_button, cancel_button2;
     private ImageButton settingsButton, searchButton;
-    private String provider;
     private String radius, radiusSettings;
     private boolean startService;
     public Location myL;
-    private int firstZoom = 0, mapReady = 0, circleDraw = 0;
+    private int firstZoom = 0, mapReady = 0, circleDraw = 0, circleFlag = 0;
     private int backPress = 0;
-    private float zoomLevel = 16;
-    private ArrayList<MarkerClass> markers = new ArrayList<MarkerClass>();
-    private ArrayList<MarkerClass> filteredMarkers = new ArrayList<MarkerClass>();
     private Marker preparedMarker;
     private Circle circle;
-    public DatabaseReference flagsFB, markersFB, searchMarkers;
+    public DatabaseReference flagsFB, markersFB, searchMarkers, filteredMarkers;
 
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -89,6 +84,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         markersFB = database.getReference("Markers");
         flagsFB = database.getReference("Flags");
         searchMarkers = database.getReference("SearchMarkers");
+        filteredMarkers = database.getReference("FilteredMarkers");
 
 
         initViews();
@@ -103,13 +99,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             return;
         }
         if(locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
@@ -231,10 +220,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onResume();
         Log.v("Service", "OnResume ");
 
-        //cancelAlarm();
+        filteredMarkers.removeValue();
+        cancelAlarm();
         registerReceiver(receiver, new IntentFilter(TrackingService.NOTIFICATION));
+        flagsFB.child("settingsSwitch").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                startService = dataSnapshot.getValue(boolean.class);
+            }
 
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
 
+            }
+        });
+        flagsFB.child("settingsRadius").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                radiusSettings = Integer.toString(dataSnapshot.getValue(Integer.class));
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override
@@ -246,15 +256,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         unregisterReceiver(receiver);
 
-        /*tinyDB.putListObject("Markers", markers);
-        tinyDB.putBoolean("haveMarkers", true);
 
-        if(tinyDB.getBoolean("Switch")){
-            filterMarkers(markers);
+        if(startService){
+            markersFB.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for(DataSnapshot post : dataSnapshot.getChildren()){
+                        MarkerClass m = post.getValue(MarkerClass.class);
+                        if(m.distance(myL.getLatitude(), myL.getLongitude(), m.getLat(), m.getLng()) <=  Integer.parseInt(radiusSettings)){
+                            filteredMarkers.push().setValue(m);
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
             scheduleAlarrm();
-        }else{cancelAlarm();}*/
+        }else{cancelAlarm();}
     }
-
 
     //Click invent on home screen
     public void createInvent(View view){
@@ -448,8 +470,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             Toast toast = Toast.makeText(getApplicationContext(), "Tracking started", Toast.LENGTH_SHORT);
             toast.show();
 
+            Log.i(TAG, " "+circleDraw);
+
             if(circleDraw == 0) {
                 circleDraw = 1;
+                if(circleFlag == 1) {
+                    circle.remove();
+                }
                 circle = mMap.addCircle(new CircleOptions()
                         .center(new LatLng(myL.getLatitude(), myL.getLongitude()))
                         .radius(Double.parseDouble(radiusSettings))
@@ -457,6 +484,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         .fillColor(Color.BLUE));
             }else{
                 circleDraw = 0;
+                circleFlag = 1;
                 circle.remove();
                 circle = mMap.addCircle(new CircleOptions()
                         .center(new LatLng(myL.getLatitude(), myL.getLongitude()))
@@ -465,7 +493,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         .fillColor(Color.BLUE));
 
             }
-        } else{if(circleDraw == 1)circle.remove();}
+        } else{if(circleFlag == 1)circle.remove();}
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
@@ -495,7 +523,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         long firstMillis = System.currentTimeMillis();
         AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
 
-        alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, firstMillis, 1000*60*2, pendingIntent);
+        alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, firstMillis, 1000*60, pendingIntent);
     }
 
     //cancel service
@@ -507,20 +535,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         alarm.cancel(pIntent);
     }
 
-    //filter Invents in search radius
-    /*public void filterMarkers(ArrayList<MarkerClass> markersAll){
-        int i = 0;
-        filteredMarkers.clear();
-        for(MarkerClass m : markersAll){
-            if(m.distance(myL.getLatitude(), myL.getLongitude(), m.getLat(), m.getLng()) <=  Integer.parseInt(radiusSettings)){
-                filteredMarkers.add(m);
-                i++;
-            }
-        }
-        if(i != 0) {
-            tinyDB.putListObject("filteredMarkers", filteredMarkers);
-        }else{tinyDB.putBoolean("noFiltered", true);}
-    }*/
+
 
     @Override
     public void onBackPressed() {

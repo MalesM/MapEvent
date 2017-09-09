@@ -11,18 +11,13 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
-
 public class TrackingService extends IntentService{
-    private int num = 0;
     private String radius;
     public static final String NOTIFICATION = "com.example.gospodin.inventator2";
     public FirebaseDatabase database = FirebaseDatabase.getInstance();
     public DatabaseReference flagsFB = database.getReference("Flags");
     public DatabaseReference markersFB = database.getReference("Markers");
     public DatabaseReference fmarkersFB = database.getReference("SearchMarkers");
-    private final ArrayList<MarkerClass> allMarkers = new ArrayList<>();
-    private int jot=0;
 
     public TrackingService() {
         super("TrackingService");
@@ -50,14 +45,10 @@ public class TrackingService extends IntentService{
             public void onCancelled(DatabaseError databaseError) {
             }
         });
-
-
-
     }
 
     public void sendMarkers(){
         Intent i = new Intent(NOTIFICATION);
-        //i.putExtra("HaveSome", num);
         sendBroadcast(i);
     }
 }
