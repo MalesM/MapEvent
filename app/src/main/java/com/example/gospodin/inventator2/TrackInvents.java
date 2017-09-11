@@ -53,7 +53,7 @@ public class TrackInvents extends IntentService  {
                 @Override
                 public void onLocationChanged(Location location) {
                     myL = location;
-                    Log.v(TAG, ""+myL.getLatitude()+" "+myL.getLongitude());
+                    Log.i(TAG, "NP "+myL.getLatitude()+" "+myL.getLongitude());
                 }
                 @Override
                 public void onStatusChanged(String s, int i, Bundle bundle) {}
@@ -68,7 +68,8 @@ public class TrackInvents extends IntentService  {
                 @Override
                 public void onLocationChanged(Location location) {
                     myL = location;
-                    Log.v(TAG, ""+myL.getLatitude()+" "+myL.getLongitude());
+                    Log.i(TAG, "GPS "+myL.getLatitude()+" "+myL.getLongitude());
+
                 }
                 @Override
                 public void onStatusChanged(String s, int i, Bundle bundle) {}
@@ -84,102 +85,62 @@ public class TrackInvents extends IntentService  {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
-        int a = 0;
-        int b = 0;
-        int c =0;
-        final long newSize;
 
-        allFB.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                distance = dataSnapshot.child("Flags").child("settingsRadius").getValue(Integer.class);
-                long size = dataSnapshot.child("FilteredMarkers").getChildrenCount();
-                Log.i(TAG, ""+distance);
-                for(DataSnapshot markers : dataSnapshot.child("Markers").getChildren()){
-                    MarkerClass m = markers.getValue(MarkerClass.class);
-                    if(m.distance(myL.getLatitude(), myL.getLongitude(), m.getLat(), m.getLng()) <= distance){
-                        for(DataSnapshot filter : dataSnapshot.child("FilteredMarkers").getChildren()){
-                            MarkerClass mm = filter.getValue(MarkerClass.class);
-                            if (m.distance(m.getLat(),m.getLng(), mm.getLat(), mm.getLng()) != 0){
-                                //filteredMarkers.push().setValue(m);
-                                contains++;
+        new java.util.Timer().schedule(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        allFB.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                distance = dataSnapshot.child("Flags").child("settingsRadius").getValue(Integer.class);
+                                long size = dataSnapshot.child("FilteredMarkers").getChildrenCount();
+                                //Log.i(TAG, ""+distance);
+                                //Log.i(TAG, ""+size);
+                                for(DataSnapshot markers : dataSnapshot.child("Markers").getChildren()){
+                                    MarkerClass m = markers.getValue(MarkerClass.class);
+                                    if(m.distance(myL.getLatitude(), myL.getLongitude(), m.getLat(), m.getLng()) <= distance){
+                                        for(DataSnapshot filter : dataSnapshot.child("FilteredMarkers").getChildren()){
+                                            MarkerClass mm = filter.getValue(MarkerClass.class);
+                                            if (m.distance(m.getLat(),m.getLng(), mm.getLat(), mm.getLng()) == 0){
+                                                contains++;
+                                                Log.i(TAG, " "+m.getLat()+" "+m.getLng());
+                                                Log.i(TAG, " "+mm.getLat()+" "+mm.getLng());
+                                            }
+                                        }
+
+                                        Log.i(TAG, ""+contains);
+                                        Log.i(TAG, ""+size);
+                                        if(contains == 0){
+                                            filteredMarkers.push().setValue(m);
+                                            contains = 0;
+                                            size++;
+                                            added++;
+                                        }else contains = 0;
+                                    }
+                                }
+                                if(added != 0){
+                                    NotificationCompat.Builder builder =
+                                            new NotificationCompat.Builder(getApplicationContext())
+                                                    .setSmallIcon(R.drawable.search)
+                                                    .setContentTitle("New Invent!")
+                                                    .setContentText("total: "+added);
+                                    NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                                    // notificationID allows you to update the notification later on.
+                                    mNotificationManager.notify(12345, builder.build());
+                                }
                             }
-                        }
-                        if(contains == size){
-                            filteredMarkers.push().setValue(m);
-                            contains = 0;
-                            size++;
-                        }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
                     }
-                }
-                if(added != 0){
-                    NotificationCompat.Builder builder =
-                            new NotificationCompat.Builder(getApplicationContext())
-                                    .setSmallIcon(R.drawable.search)
-                                    .setContentTitle("New Invent!")
-                                    .setContentText("total: "+added);
-                    NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                    // notificationID allows you to update the notification later on.
-                    mNotificationManager.notify(12345, builder.build());
-                }
-            }
+                },
+                5000
+        );
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-        /*flagsFB.child("settingsRadius").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                distance = dataSnapshot.getValue(Integer.class);
-                markersFB.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        for(DataSnapshot post : dataSnapshot.getChildren()){
-
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });*/
-
-        /*for(MarkerClass m : all){
-            if(m.distance(current.getLatitude(), current.getLongitude(), m.getLat(), m.getLng()) <= radius) {
-                a++;
-                for (MarkerClass mm : trackNew) {
-                    if (m.distance(m.getLat(),m.getLng(), mm.getLat(), mm.getLng()) == 0) {
-                        b++;
-                    }
-                }
-            }
-            if(a != (b+c)){
-                c++;
-                trackNew.add(m);}
-        }
-
-        if(a != b){
-            tdb.putListObject("filteredMarkers", trackNew);
-            NotificationCompat.Builder builder =
-                    new NotificationCompat.Builder(this)
-                            .setSmallIcon(R.drawable.search)
-                            .setContentTitle("New Invent!")
-                            .setContentText("total: "+c);
-            NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            // notificationID allows you to update the notification later on.
-            mNotificationManager.notify(12345, builder.build());
-        }*/
 
 
     }

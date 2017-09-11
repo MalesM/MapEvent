@@ -522,7 +522,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         long firstMillis = System.currentTimeMillis();
         AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
 
-        alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, firstMillis, 1000*20, pendingIntent);
+        alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, firstMillis+20*1000, 1000*20, pendingIntent);
     }
 
     //cancel service
