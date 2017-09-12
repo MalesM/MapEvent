@@ -20,6 +20,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -51,11 +52,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private String radius, radiusSettings;
     private boolean startService;
     public Location myL;
-    private int firstZoom = 0, mapReady = 0, circleDraw = 0, circleFlag = 0;
+    private int firstZoom = 0, mapReady = 0, circleDraw = 0, circleFlag = 0, favoritesFlag = 0;
     private int backPress = 0;
     private Marker preparedMarker;
     private Circle circle;
-    public DatabaseReference flagsFB, markersFB, searchMarkers, filteredMarkers;
+    public DatabaseReference flagsFB, markersFB, searchMarkers, filteredMarkers, all;
+    public String key = "";
 
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -81,6 +83,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_maps);
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
+        all = database.getReference();
         markersFB = database.getReference("Markers");
         flagsFB = database.getReference("Flags");
         searchMarkers = database.getReference("SearchMarkers");
@@ -167,6 +170,86 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
 
+        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+            @Override
+            public View getInfoWindow(Marker marker) {
+                return null;
+            }
+
+            @Override
+            public View getInfoContents(Marker marker) {
+                View v = getLayoutInflater().inflate(R.layout.invent_info_window, null);
+
+                TextView titleInfo = (TextView) v.findViewById(R.id.titleInfo);
+                TextView descriptionInfo = (TextView) v.findViewById(R.id.descriptionInfo);
+
+                titleInfo.setText(marker.getTitle());
+                descriptionInfo.setText(marker.getSnippet());
+
+                return v;
+            }
+        });
+
+        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+            @Override
+            public void onInfoWindowClick(final Marker marker) {
+                all.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for(DataSnapshot post : dataSnapshot.child("Markers").getChildren()){
+                            MarkerClass m = post.getValue(MarkerClass.class);
+                            if(m.distance(m.getLat(), m.getLng(), marker.getPosition().latitude, marker.getPosition().longitude) == 0){
+                                for (DataSnapshot post2 : dataSnapshot.child("Favorites").getChildren()) {
+                                    MarkerClass m2 = post2.getValue(MarkerClass.class);
+                                    if(m.distance(m.getLat(), m.getLng(), m2.getLat(), m2.getLng()) == 0){favoritesFlag=1;}
+                                }
+                            }
+                        }
+                        if(favoritesFlag==0){
+                            all.child("Favorites").push().setValue(
+                                    new MarkerClass(marker.getPosition().latitude, marker.getPosition().longitude, marker.getTitle(), marker.getSnippet()));
+                            Toast toast = makeText(getApplicationContext(), "Added to favorites", Toast.LENGTH_SHORT);
+                            toast.show();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+        });
+
+        mMap.setOnInfoWindowLongClickListener(new GoogleMap.OnInfoWindowLongClickListener() {
+            @Override
+            public void onInfoWindowLongClick(final Marker marker) {
+
+                all.child("Favorites").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            for (DataSnapshot post : dataSnapshot.getChildren()) {
+                                MarkerClass m = post.getValue(MarkerClass.class);
+                                if (m.distance(m.getLat(), m.getLng(), marker.getPosition().latitude, marker.getPosition().longitude) == 0) {
+                                    key = post.getKey();
+                                    Toast toast = makeText(getApplicationContext(), "Removed from favorites", Toast.LENGTH_SHORT);
+                                    toast.show();
+
+                                }
+
+                            }
+                            if(!key.equals("")){all.child("Favorites").child(key).removeValue();}
+                        }
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+        });
+
         flagsFB.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -179,7 +262,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 drawMarker(post.getValue(MarkerClass.class));
                             }
                         }
-
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
 
@@ -479,8 +561,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 circle = mMap.addCircle(new CircleOptions()
                         .center(new LatLng(myL.getLatitude(), myL.getLongitude()))
                         .radius(Double.parseDouble(radiusSettings))
+                        .strokeWidth(2)
                         .strokeColor(Color.RED)
-                        .fillColor(Color.BLUE));
+                        .fillColor(Color.parseColor("#500084d3")));
             }else{
                 circleDraw = 0;
                 circleFlag = 1;
@@ -488,8 +571,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 circle = mMap.addCircle(new CircleOptions()
                         .center(new LatLng(myL.getLatitude(), myL.getLongitude()))
                         .radius(Double.parseDouble(radiusSettings))
+                        .strokeWidth(2)
                         .strokeColor(Color.RED)
-                        .fillColor(Color.BLUE));
+                        .fillColor(Color.parseColor("#500084d3")));
 
             }
         } else{if(circleFlag == 1)circle.remove();}
@@ -533,8 +617,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
         alarm.cancel(pIntent);
     }
-
-
 
     @Override
     public void onBackPressed() {
