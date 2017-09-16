@@ -2,6 +2,7 @@ package com.example.gospodin.inventator2;
 
 import android.app.IntentService;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -84,7 +85,7 @@ public class TrackInvents extends IntentService  {
     }
 
     @Override
-    protected void onHandleIntent(@Nullable Intent intent) {
+    protected void onHandleIntent(@Nullable final Intent intent) {
 
         new java.util.Timer().schedule(
                 new java.util.TimerTask() {
@@ -113,6 +114,7 @@ public class TrackInvents extends IntentService  {
                                         Log.i(TAG, ""+size);
                                         if(contains == 0){
                                             filteredMarkers.push().setValue(m);
+                                            allFB.child("NewFromService").push().setValue(m);
                                             contains = 0;
                                             size++;
                                             added++;
@@ -120,11 +122,17 @@ public class TrackInvents extends IntentService  {
                                     }
                                 }
                                 if(added != 0){
+                                    Intent i = new Intent(getApplicationContext(), MapsActivity.class);
+                                    PendingIntent pendingIntent =
+                                            PendingIntent.getActivity(getApplicationContext(),0, i, PendingIntent.FLAG_UPDATE_CURRENT );
+
                                     NotificationCompat.Builder builder =
                                             new NotificationCompat.Builder(getApplicationContext())
                                                     .setSmallIcon(R.drawable.search)
                                                     .setContentTitle("New Invent!")
-                                                    .setContentText("total: "+added);
+                                                    .setContentText("total: "+added)
+                                                    .setAutoCancel(true)
+                                                    .setContentIntent(pendingIntent);
                                     NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                                     // notificationID allows you to update the notification later on.
                                     mNotificationManager.notify(12345, builder.build());

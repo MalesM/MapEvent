@@ -27,6 +27,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
@@ -60,6 +61,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public String key = "";
 
 
+    //broadcast for search markers
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -92,6 +94,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         initViews();
 
+        //adding gMap to app
         SupportMapFragment mMapFragment = SupportMapFragment.newInstance();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.add(R.id.fragment_container, mMapFragment, "Map");
@@ -100,6 +103,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
         fragmentTransaction.add(R.id.fragment_buttons, fragmentButtonsHome);
 
+        //get current location
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
@@ -190,6 +194,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
+        // adding to favorites after click on info
         mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(final Marker marker) {
@@ -210,7 +215,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     new MarkerClass(marker.getPosition().latitude, marker.getPosition().longitude, marker.getTitle(), marker.getSnippet()));
                             Toast toast = makeText(getApplicationContext(), "Added to favorites", Toast.LENGTH_SHORT);
                             toast.show();
-                        }
+                            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+                        }else favoritesFlag = 0;
                     }
 
                     @Override
@@ -221,6 +227,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
+        // remove from favorites after long pres on info
         mMap.setOnInfoWindowLongClickListener(new GoogleMap.OnInfoWindowLongClickListener() {
             @Override
             public void onInfoWindowLongClick(final Marker marker) {
@@ -235,7 +242,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     key = post.getKey();
                                     Toast toast = makeText(getApplicationContext(), "Removed from favorites", Toast.LENGTH_SHORT);
                                     toast.show();
-
+                                    marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
                                 }
 
                             }
@@ -250,6 +257,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
+        // draw all markers on map
         flagsFB.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -338,6 +346,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         unregisterReceiver(receiver);
 
+        // start tracking after closing app
         if(startService){
             markersFB.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -665,5 +674,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 break;
         }
     }
+
+    public static boolean sameMarker (MarkerClass m1, MarkerClass m2){
+        return (m1.getLat() == m2.getLat() && m1.getLng() == m2.getLng());
+    }
+
+    
 }
 
