@@ -208,6 +208,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         for(DataSnapshot post : dataSnapshot.child("Markers").getChildren()){
                             MarkerClass m = post.getValue(MarkerClass.class);
                             if(m.getLat() == marker.getPosition().latitude && m.getLng() == marker.getPosition().longitude){
+                                tempMarker = m;
                                 for (DataSnapshot post2 : dataSnapshot.child("Favorites").getChildren()) {
                                     MarkerClass m2 = post2.getValue(MarkerClass.class);
                                     if(m.getLat() == m2.getLat() && m.getLng() == m2.getLng()){favoritesFlag=1;}
@@ -215,8 +216,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             }
                         }
                         if(favoritesFlag==0){
-                            all.child("Favorites").push().setValue(
-                                    new MarkerClass(marker.getPosition().latitude, marker.getPosition().longitude, marker.getTitle(), marker.getSnippet(), ));
+                            all.child("Favorites").push().setValue(tempMarker);
                             Toast toast = makeText(getApplicationContext(), "Added to favorites", Toast.LENGTH_SHORT);
                             toast.show();
                             marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
@@ -347,6 +347,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         Log.v("Service", "OnPause ");
         Log.v(TAG, ""+myL.getLatitude()+" "+myL.getLongitude());
+        Log.v(TAG, ""+inventType);
+
 
         unregisterReceiver(receiver);
 

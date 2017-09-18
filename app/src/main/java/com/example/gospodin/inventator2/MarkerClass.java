@@ -20,6 +20,10 @@ public class MarkerClass {
         this.type = type;
     }
 
+    public int getType() {
+        return type;
+    }
+
     public double getLat(){
         return lat;
     }

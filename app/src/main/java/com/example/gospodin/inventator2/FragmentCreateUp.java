@@ -76,7 +76,7 @@ public class FragmentCreateUp extends Fragment {
     }
 
     public void sendMarkerInfo(){
-        markerInfo.sendInfo(title.getText().toString(), detail.getText().toString(), radioGroup.getCheckedRadioButtonId());
+        markerInfo.sendInfo(title.getText().toString(), detail.getText().toString(), radioGroup.indexOfChild(getActivity().findViewById(radioGroup.getCheckedRadioButtonId())));
     }
 
     public void error(){
