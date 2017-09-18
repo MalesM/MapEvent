@@ -1,6 +1,7 @@
 package com.example.gospodin.inventator2;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -8,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.model.Marker;
@@ -18,6 +20,7 @@ public class FragmentCreateUp extends Fragment {
     SendMarkerInfo markerInfo;
     private TextView duzina, sirina;
     private EditText title, detail;
+    private RadioGroup radioGroup;
 
     public interface GetData{
         Marker getCoord();
@@ -25,7 +28,7 @@ public class FragmentCreateUp extends Fragment {
 
     public interface SendMarkerInfo{
 
-        void sendInfo(String title, String detail);
+        void sendInfo(String title, String detail, int type);
     }
 
 
@@ -40,8 +43,20 @@ public class FragmentCreateUp extends Fragment {
         title = (EditText) v.findViewById(R.id.title);
         detail = (EditText) v.findViewById(R.id.detail);
 
-        duzina.setText(""+getData.getCoord().getPosition().longitude);
-        sirina.setText(""+getData.getCoord().getPosition().latitude);
+        radioGroup = (RadioGroup) v.findViewById(R.id.radioGroup);
+
+        title.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if(b){
+                    title.setBackgroundColor(Color.WHITE);
+                    title.setError(null);
+                }
+            }
+        });
+
+        //duzina.setText(""+getData.getCoord().getPosition().longitude);
+        //sirina.setText(""+getData.getCoord().getPosition().latitude);
 
         return v;
     }
@@ -61,6 +76,11 @@ public class FragmentCreateUp extends Fragment {
     }
 
     public void sendMarkerInfo(){
-        markerInfo.sendInfo(title.getText().toString(), detail.getText().toString());
+        markerInfo.sendInfo(title.getText().toString(), detail.getText().toString(), radioGroup.getCheckedRadioButtonId());
+    }
+
+    public void error(){
+        title.setError("Must contain title");
+        title.setBackgroundColor(Color.parseColor("#FFEBEE"));
     }
 }

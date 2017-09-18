@@ -103,7 +103,7 @@ public class TrackInvents extends IntentService  {
                                     if(m.distance(myL.getLatitude(), myL.getLongitude(), m.getLat(), m.getLng()) <= distance){
                                         for(DataSnapshot filter : dataSnapshot.child("FilteredMarkers").getChildren()){
                                             MarkerClass mm = filter.getValue(MarkerClass.class);
-                                            if (m.distance(m.getLat(),m.getLng(), mm.getLat(), mm.getLng()) == 0){
+                                            if (m.getLat() == mm.getLat() && m.getLng() == mm.getLng()){
                                                 contains++;
                                                 Log.i(TAG, " "+m.getLat()+" "+m.getLng());
                                                 Log.i(TAG, " "+mm.getLat()+" "+mm.getLng());

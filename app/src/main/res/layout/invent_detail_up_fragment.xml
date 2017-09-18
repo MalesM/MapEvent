@@ -36,6 +36,7 @@
         android:textStyle="bold|italic" />
 
     <RadioGroup
+        android:id="@+id/radioGroup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
@@ -43,32 +44,36 @@
         android:orientation="horizontal">
 
         <RadioButton
-            android:id="@+id/radioButton8"
+            android:id="@+id/sportRB"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="s" />
+            android:background="@android:color/holo_red_light"
+            android:text="sport" />
 
         <RadioButton
-            android:id="@+id/radioButton7"
+            android:id="@+id/cultureRB"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="c" />
+            android:background="@android:color/holo_blue_dark"
+            android:text="culture" />
 
         <RadioButton
-            android:id="@+id/radioButton6"
+            android:id="@+id/partyRB"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="p" />
+            android:background="@android:color/holo_green_dark"
+            android:text="party" />
 
         <RadioButton
-            android:id="@+id/radioButton5"
+            android:id="@+id/foodRB"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="f" />
+            android:background="@android:color/holo_orange_light"
+            android:text="food" />
 
     </RadioGroup>
 
@@ -87,11 +92,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:orientation="horizontal">
-
-        <CheckBox
-            android:id="@+id/checkBox2"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent" />
 
         <EditText
             android:id="@+id/detail"

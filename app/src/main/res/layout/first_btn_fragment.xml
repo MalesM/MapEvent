@@ -14,21 +14,29 @@
         android:onClick="searchInvent"
         android:src="@drawable/search3" />
 
-    <Button
+    <ImageButton
         android:id="@+id/invent_button"
 
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:background="@drawable/buttonshape"
-
+        android:background="#ffffff"
+        android:elevation="1dp"
         android:onClick="createInvent"
+        android:scaleX="1.5"
+        android:scaleY="1.5"
+        android:src="@drawable/newinvent2" />
+
+        <!--android:background="@drawable/buttonshape"
+
+
         android:shadowColor="#6C1EA8"
         android:shadowDx="0"
         android:shadowDy="0"
         android:shadowRadius="9"
         android:text="New Invent"
         android:textColor="#FFFCFC"
-        android:textSize="18sp" />
+        android:textSize="18sp" /> -->
+
 
     <ImageButton
         android:id="@+id/settingsButton"

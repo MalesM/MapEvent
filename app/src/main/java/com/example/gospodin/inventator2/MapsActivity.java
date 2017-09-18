@@ -19,6 +19,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -48,14 +49,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public static final String TAG = "debuger";
     private GoogleMap mMap;
     private LocationManager locationManager;
-    private Button invent_button, confirm_button, cancel_button, cancel_button2;
-    private ImageButton settingsButton, searchButton;
+    private Button  confirm_button, cancel_button, cancel_button2;
+    private ImageButton settingsButton, searchButton, invent_button;
+    private EditText title;
     private String radius, radiusSettings;
     private boolean startService;
     public Location myL;
     private int firstZoom = 0, mapReady = 0, circleDraw = 0, circleFlag = 0, favoritesFlag = 0;
     private int backPress = 0;
+    private int inventType;
     private Marker preparedMarker;
+    private MarkerClass tempMarker;
     private Circle circle;
     public DatabaseReference flagsFB, markersFB, searchMarkers, filteredMarkers, all;
     public String key = "";
@@ -203,16 +207,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         for(DataSnapshot post : dataSnapshot.child("Markers").getChildren()){
                             MarkerClass m = post.getValue(MarkerClass.class);
-                            if(m.distance(m.getLat(), m.getLng(), marker.getPosition().latitude, marker.getPosition().longitude) == 0){
+                            if(m.getLat() == marker.getPosition().latitude && m.getLng() == marker.getPosition().longitude){
                                 for (DataSnapshot post2 : dataSnapshot.child("Favorites").getChildren()) {
                                     MarkerClass m2 = post2.getValue(MarkerClass.class);
-                                    if(m.distance(m.getLat(), m.getLng(), m2.getLat(), m2.getLng()) == 0){favoritesFlag=1;}
+                                    if(m.getLat() == m2.getLat() && m.getLng() == m2.getLng()){favoritesFlag=1;}
                                 }
                             }
                         }
                         if(favoritesFlag==0){
                             all.child("Favorites").push().setValue(
-                                    new MarkerClass(marker.getPosition().latitude, marker.getPosition().longitude, marker.getTitle(), marker.getSnippet()));
+                                    new MarkerClass(marker.getPosition().latitude, marker.getPosition().longitude, marker.getTitle(), marker.getSnippet(), ));
                             Toast toast = makeText(getApplicationContext(), "Added to favorites", Toast.LENGTH_SHORT);
                             toast.show();
                             marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
@@ -238,7 +242,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         if (dataSnapshot.exists()) {
                             for (DataSnapshot post : dataSnapshot.getChildren()) {
                                 MarkerClass m = post.getValue(MarkerClass.class);
-                                if (m.distance(m.getLat(), m.getLng(), marker.getPosition().latitude, marker.getPosition().longitude) == 0) {
+                                if (m.getLat() == marker.getPosition().latitude && m.getLng() == marker.getPosition().longitude) {
                                     key = post.getKey();
                                     Toast toast = makeText(getApplicationContext(), "Removed from favorites", Toast.LENGTH_SHORT);
                                     toast.show();
@@ -453,21 +457,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //fully invent create
     public void finishInvent(View view){
-
         backPress = 0;
         FragmentCreateUp fragmentCreateUp = (FragmentCreateUp) getSupportFragmentManager().findFragmentByTag("Details");
         fragmentCreateUp.sendMarkerInfo();
+        if(!preparedMarker.getTitle().trim().equals("")) {
+            MarkerClass mc = new MarkerClass(preparedMarker.getPosition().latitude, preparedMarker.getPosition().longitude,
+                    preparedMarker.getTitle(), preparedMarker.getSnippet(), inventType);
 
-        MarkerClass mc = new MarkerClass(preparedMarker.getPosition().latitude, preparedMarker.getPosition().longitude,
-                preparedMarker.getTitle(), preparedMarker.getSnippet());
+            markersFB.push().setValue(mc);
 
-        markersFB.push().setValue(mc);
-
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
-        fragmentTransaction.commit();
-        FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
-        fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
+            fragmentTransaction.commit();
+            FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
+            fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
+        }else fragmentCreateUp.error(); //last
     }
 
     @Override
@@ -477,15 +481,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //get information from create fragment
     @Override
-    public void sendInfo(String title, String detail) {
+    public void sendInfo(String title, String detail, int type) {
         preparedMarker.setTitle(title);
         preparedMarker.setSnippet(detail);
+        inventType = type;
     }
 
     public void initViews(){
         searchButton = (ImageButton) findViewById(R.id.searchButton);
         settingsButton = (ImageButton) findViewById(R.id.settingsButton);
-        invent_button = (Button) findViewById(R.id.invent_button);
+        invent_button = (ImageButton) findViewById(R.id.invent_button);
+
+        title = (EditText) findViewById(R.id.title);
 
         confirm_button = (Button) findViewById(R.id.confirm_button);
         cancel_button = (Button) findViewById(R.id.cancel_button);
@@ -679,6 +686,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return (m1.getLat() == m2.getLat() && m1.getLng() == m2.getLng());
     }
 
-    
+
 }
 
