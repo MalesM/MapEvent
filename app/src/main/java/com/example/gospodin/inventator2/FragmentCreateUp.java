@@ -15,9 +15,9 @@ import android.widget.TextView;
 public class FragmentCreateUp extends Fragment {
 
     SendMarkerInfo markerInfo;
-    private TextView duzina, sirina;
     private EditText title, detail;
     private RadioGroup radioGroup;
+    private TextView timeText;
 
 
 
@@ -32,11 +32,11 @@ public class FragmentCreateUp extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.invent_detail_up_fragment, container, false);
-        duzina = (TextView) v.findViewById(R.id.duzina);
-        sirina = (TextView) v.findViewById(R.id.sirina);
+
 
         title = (EditText) v.findViewById(R.id.title);
         detail = (EditText) v.findViewById(R.id.detail);
+        timeText = (TextView) v.findViewById(R.id.timeText);
 
         radioGroup = (RadioGroup) v.findViewById(R.id.radioGroup);
 
@@ -75,5 +75,9 @@ public class FragmentCreateUp extends Fragment {
         title.setError("Must contain title");
         title.setBackgroundColor(Color.parseColor("#FFEBEE"));
 
+    }
+
+    public void getTime(int a, int b){
+        timeText.setText(""+a+":"+b);
     }
 }

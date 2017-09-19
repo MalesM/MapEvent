@@ -14,6 +14,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
@@ -45,7 +46,7 @@ import static android.widget.Toast.makeText;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
         FragmentCreateUp.SendMarkerInfo, FragmentSearchUp.SendRadius,
-        FragmentSettingsUp.TrackingSettings{
+        FragmentSettingsUp.TrackingSettings, TimePickerFragment.SendTime{
 
     public static final String TAG = "debuger";
     private GoogleMap mMap;
@@ -64,6 +65,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Circle circle;
     public DatabaseReference flagsFB, markersFB, searchMarkers, filteredMarkers, all;
     public String key = "";
+    public int timeH, timeM;
 
 
     //broadcast for search markers
@@ -737,5 +739,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
+    public void setTime(View view){
+        DialogFragment dialogFragment = new TimePickerFragment();
+        dialogFragment.show(getSupportFragmentManager(),"timePicker");
+    }
+
+    @Override
+    public void inventTime(int a, int b) {
+        timeH = a;
+        timeM = b;
+        FragmentCreateUp fragmentCreateUp = (FragmentCreateUp) getSupportFragmentManager().findFragmentByTag("Details");
+        fragmentCreateUp.getTime(timeH, timeM);
+    }
 }
 

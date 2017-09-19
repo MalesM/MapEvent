@@ -8,6 +8,7 @@ public class MarkerClass {
     private String title="", description="";
     private int type;
 
+
     public MarkerClass(){}
 
     public MarkerClass(Double lat, Double lng, String title, String description, int type){
