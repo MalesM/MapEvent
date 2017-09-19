@@ -12,19 +12,14 @@ import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
-import com.google.android.gms.maps.model.Marker;
-
 public class FragmentCreateUp extends Fragment {
 
-    GetData getData;
     SendMarkerInfo markerInfo;
     private TextView duzina, sirina;
     private EditText title, detail;
     private RadioGroup radioGroup;
 
-    public interface GetData{
-        Marker getCoord();
-    }
+
 
     public interface SendMarkerInfo{
 
@@ -55,8 +50,6 @@ public class FragmentCreateUp extends Fragment {
             }
         });
 
-        //duzina.setText(""+getData.getCoord().getPosition().longitude);
-        //sirina.setText(""+getData.getCoord().getPosition().latitude);
 
         return v;
     }
@@ -66,7 +59,6 @@ public class FragmentCreateUp extends Fragment {
         super.onAttach(context);
 
         try {
-            getData = (GetData) context;
             markerInfo = (SendMarkerInfo) context;
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString()
@@ -82,5 +74,6 @@ public class FragmentCreateUp extends Fragment {
     public void error(){
         title.setError("Must contain title");
         title.setBackgroundColor(Color.parseColor("#FFEBEE"));
+
     }
 }

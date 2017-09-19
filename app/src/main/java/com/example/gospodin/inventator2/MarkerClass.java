@@ -2,8 +2,6 @@ package com.example.gospodin.inventator2;
 
 import android.location.Location;
 
-//enum Type {Sport, Culture, Party, Food}
-
 
 public class MarkerClass {
     private double lat, lng;

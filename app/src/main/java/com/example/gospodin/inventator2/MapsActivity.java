@@ -17,6 +17,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -43,7 +44,7 @@ import com.google.firebase.database.ValueEventListener;
 import static android.widget.Toast.makeText;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
-        FragmentCreateUp.GetData, FragmentCreateUp.SendMarkerInfo, FragmentSearchUp.SendRadius,
+        FragmentCreateUp.SendMarkerInfo, FragmentSearchUp.SendRadius,
         FragmentSettingsUp.TrackingSettings{
 
     public static final String TAG = "debuger";
@@ -218,6 +219,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         if(favoritesFlag==0){
                             all.child("Favorites").push().setValue(tempMarker);
                             Toast toast = makeText(getApplicationContext(), "Added to favorites", Toast.LENGTH_SHORT);
+                            toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
                             toast.show();
                             marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
                         }else favoritesFlag = 0;
@@ -245,6 +247,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 if (m.getLat() == marker.getPosition().latitude && m.getLng() == marker.getPosition().longitude) {
                                     key = post.getKey();
                                     Toast toast = makeText(getApplicationContext(), "Removed from favorites", Toast.LENGTH_SHORT);
+                                    toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
                                     toast.show();
                                     switch (m.getType()) {
                                         case 0:
@@ -475,7 +478,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         backPress = 0;
         FragmentCreateUp fragmentCreateUp = (FragmentCreateUp) getSupportFragmentManager().findFragmentByTag("Details");
         fragmentCreateUp.sendMarkerInfo();
-        if(!preparedMarker.getTitle().trim().equals("")) {
+        if(!preparedMarker.getTitle().trim().equals("") && inventType!=-1) {
             MarkerClass mc = new MarkerClass(preparedMarker.getPosition().latitude, preparedMarker.getPosition().longitude,
                     preparedMarker.getTitle(), preparedMarker.getSnippet(), inventType);
 
@@ -486,13 +489,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             fragmentTransaction.commit();
             FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
             fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
-        }else fragmentCreateUp.error(); //last
+        }else {
+            fragmentCreateUp.error();
+            if(inventType==-1){
+                Toast toast = makeText(getApplicationContext(), "Must select type", Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
+                toast.show();
+            }
+        }
     }
 
-    @Override
-    public Marker getCoord() {
-        return preparedMarker;
-    }
 
     //get information from create fragment
     @Override
@@ -574,6 +580,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         startService(i);
 
         Toast toast = makeText(getApplicationContext(), "Service started", Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
         toast.show();
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
@@ -607,6 +614,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         if(startService ){
             Toast toast = Toast.makeText(getApplicationContext(), "Tracking started", Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
             toast.show();
 
             Log.i(TAG, " "+circleDraw);
