@@ -246,7 +246,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     key = post.getKey();
                                     Toast toast = makeText(getApplicationContext(), "Removed from favorites", Toast.LENGTH_SHORT);
                                     toast.show();
-                                    marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                                    switch (m.getType()) {
+                                        case 0:
+                                            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                                            break;
+                                        case 1:
+                                            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                                            break;
+                                        case 2:
+                                            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                                            break;
+                                        case 3:
+                                            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                                            break;
+                                    }
                                 }
 
                             }
@@ -487,6 +500,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         preparedMarker.setTitle(title);
         preparedMarker.setSnippet(detail);
         inventType = type;
+        switch (inventType){
+            case 0:
+                preparedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                break;
+            case 1:
+                preparedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                break;
+            case 2:
+                preparedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                break;
+            case 3:
+                preparedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                break;
+        }
     }
 
     public void initViews(){
@@ -503,7 +530,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void drawMarker(MarkerClass m){
-        mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription()));
+        switch (m.getType()) {
+            case 0:
+                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                break;
+            case 1:
+                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                break;
+            case 2:
+                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                break;
+            case 3:
+                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                break;
+        }
     }
 
     // go to search fragment
