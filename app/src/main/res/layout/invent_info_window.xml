@@ -13,8 +13,8 @@
 
         <TextView
             android:id="@+id/titleInfo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_weight="10"
             android:gravity="center"
             android:text="Title"
@@ -39,10 +39,16 @@
 
         <TextView
             android:id="@+id/textView17"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Vreme pocetka" />
+            android:text="Starts_at:" />
+
+        <TextView
+            android:id="@+id/timeInfo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
 
     </LinearLayout>
 

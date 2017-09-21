@@ -5,18 +5,23 @@ import android.location.Location;
 
 public class MarkerClass {
     private double lat, lng;
-    private String title="", description="";
+    private String title="", description="", time;
     private int type;
 
 
     public MarkerClass(){}
 
-    public MarkerClass(Double lat, Double lng, String title, String description, int type){
+    public MarkerClass(Double lat, Double lng, String title, String description, int type, String time){
         this.lat = lat;
         this.lng = lng;
         this.title = title;
         this.description = description;
         this.type = type;
+        this.time = time;
+    }
+
+    public String getTime() {
+        return time;
     }
 
     public int getType() {

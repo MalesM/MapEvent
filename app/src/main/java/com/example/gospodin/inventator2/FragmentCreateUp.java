@@ -23,7 +23,7 @@ public class FragmentCreateUp extends Fragment {
 
     public interface SendMarkerInfo{
 
-        void sendInfo(String title, String detail, int type);
+        void sendInfo(String title, String detail, int type, String time);
     }
 
 
@@ -49,8 +49,6 @@ public class FragmentCreateUp extends Fragment {
                 }
             }
         });
-
-
         return v;
     }
 
@@ -68,7 +66,9 @@ public class FragmentCreateUp extends Fragment {
     }
 
     public void sendMarkerInfo(){
-        markerInfo.sendInfo(title.getText().toString(), detail.getText().toString(), radioGroup.indexOfChild(getActivity().findViewById(radioGroup.getCheckedRadioButtonId())));
+        markerInfo.sendInfo(title.getText().toString(), detail.getText().toString(),
+                radioGroup.indexOfChild(getActivity().findViewById(radioGroup.getCheckedRadioButtonId())),
+                timeText.getText().toString());
     }
 
     public void error(){

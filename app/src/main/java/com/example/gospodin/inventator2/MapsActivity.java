@@ -42,6 +42,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Calendar;
+
 import static android.widget.Toast.makeText;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
@@ -57,7 +59,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private String radius, radiusSettings;
     private boolean startService;
     public Location myL;
-    private int firstZoom = 0, mapReady = 0, circleDraw = 0, circleFlag = 0, favoritesFlag = 0;
+    private int firstZoom = 0, mapReady = 0, circleDraw = 0, circleFlag = 0, favoritesFlag = 0, timeShow = 0;
     private int backPress = 0;
     private int inventType;
     private Marker preparedMarker;
@@ -65,7 +67,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Circle circle;
     public DatabaseReference flagsFB, markersFB, searchMarkers, filteredMarkers, all;
     public String key = "";
-    public int timeH, timeM;
+    public int timeH, timeM, currentH, currentM;
+    private String time, timeHH, timeMM;
 
 
     //broadcast for search markers
@@ -181,6 +184,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
 
+        mMap.setOnInfoWindowCloseListener(new GoogleMap.OnInfoWindowCloseListener() {
+            @Override
+            public void onInfoWindowClose(Marker marker) {
+                timeShow = 0;
+            }
+        });
+
+        //custom marker info
         mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
             @Override
             public View getInfoWindow(Marker marker) {
@@ -188,15 +199,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
 
             @Override
-            public View getInfoContents(Marker marker) {
+            public View getInfoContents(final Marker marker) {
                 View v = getLayoutInflater().inflate(R.layout.invent_info_window, null);
 
                 TextView titleInfo = (TextView) v.findViewById(R.id.titleInfo);
                 TextView descriptionInfo = (TextView) v.findViewById(R.id.descriptionInfo);
+                final TextView timeInfo = (TextView) v.findViewById(R.id.timeInfo);
+
 
                 titleInfo.setText(marker.getTitle());
                 descriptionInfo.setText(marker.getSnippet());
+                timeInfo.setText(time);
 
+                if(timeShow == 0) {
+                    markersFB.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            for (DataSnapshot post : dataSnapshot.getChildren()) {
+                                MarkerClass m = post.getValue(MarkerClass.class);
+                                if (m.getLat() == marker.getPosition().latitude && m.getLng() == marker.getPosition().longitude) {
+                                    time = m.getTime();
+                                    Log.v(TAG, m.getTime());
+                                    timeShow = 1;
+                                    marker.showInfoWindow();
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                }
                 return v;
             }
         });
@@ -289,7 +324,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             for(DataSnapshot post : dataSnapshot.getChildren()){
-                                drawMarker(post.getValue(MarkerClass.class));
+                                String k = post.getKey();
+                                MarkerClass m = post.getValue(MarkerClass.class);
+                                String[] s = m.getTime().split(":");
+                                if(Integer.parseInt(s[0])<currentH /*&& Integer.parseInt(s[1])==currentM*/){
+                                    markersFB.child(k).removeValue();
+                                }else drawMarker(m);
                             }
                         }
                         @Override
@@ -331,6 +371,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onResume() {
         super.onResume();
         Log.v("Service", "OnResume ");
+
+        final Calendar c = Calendar.getInstance();
+        currentH = c.get(Calendar.HOUR_OF_DAY);
+        currentM = c.get(Calendar.MINUTE);
+
+//        Date date = new Date();
+//        DateFormat dateFormat = new SimpleDateFormat("HH");
 
         filteredMarkers.removeValue();
         cancelAlarm();
@@ -482,7 +529,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         fragmentCreateUp.sendMarkerInfo();
         if(!preparedMarker.getTitle().trim().equals("") && inventType!=-1) {
             MarkerClass mc = new MarkerClass(preparedMarker.getPosition().latitude, preparedMarker.getPosition().longitude,
-                    preparedMarker.getTitle(), preparedMarker.getSnippet(), inventType);
+                    preparedMarker.getTitle(), preparedMarker.getSnippet(), inventType, time);
 
             markersFB.push().setValue(mc);
 
@@ -504,10 +551,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //get information from create fragment
     @Override
-    public void sendInfo(String title, String detail, int type) {
+    public void sendInfo(String title, String detail, int type, String ttime) {
         preparedMarker.setTitle(title);
         preparedMarker.setSnippet(detail);
         inventType = type;
+        time = ttime;
         switch (inventType){
             case 0:
                 preparedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
