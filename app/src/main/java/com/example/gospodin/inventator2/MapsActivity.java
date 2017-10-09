@@ -13,6 +13,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
@@ -26,6 +27,13 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -36,6 +44,13 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -70,6 +85,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public int timeH, timeM, currentH, currentM;
     private String time, timeHH, timeMM;
 
+    private SignInButton signInButton;
+    private FirebaseAuth mAuth;
+    GoogleApiClient mGoogleApiClient;
+    FirebaseAuth.AuthStateListener mAuthListener;
+    private static final int RC_SIGN_IN = 2;
 
     //broadcast for search markers
     private BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -94,13 +114,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
+        mAuth = FirebaseAuth.getInstance();
+
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         all = database.getReference();
         markersFB = database.getReference("Markers");
         flagsFB = database.getReference("Flags");
         searchMarkers = database.getReference("SearchMarkers");
         filteredMarkers = database.getReference("FilteredMarkers");
-
 
         initViews();
 
@@ -110,8 +131,42 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         fragmentTransaction.add(R.id.fragment_container, mMapFragment, "Map");
         fragmentTransaction.commit();
         mMapFragment.getMapAsync(this);
-        FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
-        fragmentTransaction.add(R.id.fragment_buttons, fragmentButtonsHome);
+        FragmentSignIn fragmentSignIn= new FragmentSignIn();
+        fragmentTransaction.replace(R.id.fragment_buttons, fragmentSignIn);
+
+
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                if(firebaseAuth.getCurrentUser() != null){
+
+                    FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
+                    FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                    fragmentTransaction.add(R.id.fragment_buttons, fragmentButtonsHome);
+                    fragmentTransaction.commit();
+                }
+
+            }
+        };
+
+
+        //auth add
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this /* FragmentActivity */, new GoogleApiClient.OnConnectionFailedListener() {
+                    @Override
+                    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+                    }
+                })
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+
+
 
         //get current location
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
@@ -131,19 +186,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
 
                 @Override
-                public void onStatusChanged(String s, int i, Bundle bundle) {
-
-                }
+                public void onStatusChanged(String s, int i, Bundle bundle) {}
 
                 @Override
-                public void onProviderEnabled(String s) {
-
-                }
+                public void onProviderEnabled(String s) {}
 
                 @Override
-                public void onProviderDisabled(String s) {
-
-                }
+                public void onProviderDisabled(String s) {}
             });
         }
         else if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
@@ -159,23 +208,74 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
 
                 @Override
-                public void onStatusChanged(String s, int i, Bundle bundle) {
-
-                }
+                public void onStatusChanged(String s, int i, Bundle bundle) {}
 
                 @Override
-                public void onProviderEnabled(String s) {
-
-                }
+                public void onProviderEnabled(String s) {}
 
                 @Override
-                public void onProviderDisabled(String s) {
-
-                }
+                public void onProviderDisabled(String s) {}
             });
         }
 
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        mAuth.addAuthStateListener(mAuthListener);
+
+    }
+
+    private void signIn() {
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+        startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
+        if (requestCode == RC_SIGN_IN) {
+            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+            if (result.isSuccess()) {
+                // Google Sign In was successful, authenticate with Firebase
+                GoogleSignInAccount account = result.getSignInAccount();
+                firebaseAuthWithGoogle(account);
+            } else {
+                // Google Sign In failed, update UI appropriately
+                // ...
+            }
+        }
+    }
+
+    private void firebaseAuthWithGoogle(GoogleSignInAccount account) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            Log.d(TAG, "signInWithCredential:success");
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            //updateUI(user);
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Log.w(TAG, "signInWithCredential:failure", task.getException());
+                            Toast.makeText(MapsActivity.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+                            //updateUI(null);
+                        }
+
+                        // ...
+                    }
+                });
+
+    }
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -573,6 +673,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void initViews(){
+        signInButton = (SignInButton)findViewById(R.id.SgnInBtn);
+
         searchButton = (ImageButton) findViewById(R.id.searchButton);
         settingsButton = (ImageButton) findViewById(R.id.settingsButton);
         invent_button = (ImageButton) findViewById(R.id.invent_button);
@@ -798,6 +900,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         timeM = b;
         FragmentCreateUp fragmentCreateUp = (FragmentCreateUp) getSupportFragmentManager().findFragmentByTag("Details");
         fragmentCreateUp.getTime(timeH, timeM);
+    }
+
+    public void signingIn(View v){
+        signIn();
     }
 }
 
