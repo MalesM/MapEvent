@@ -88,7 +88,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private SignInButton signInButton;
     private FirebaseAuth mAuth;
     GoogleApiClient mGoogleApiClient;
-    FirebaseAuth.AuthStateListener mAuthListener;
     private static final int RC_SIGN_IN = 2;
 
     //broadcast for search markers
@@ -131,23 +130,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         fragmentTransaction.add(R.id.fragment_container, mMapFragment, "Map");
         fragmentTransaction.commit();
         mMapFragment.getMapAsync(this);
-        FragmentSignIn fragmentSignIn= new FragmentSignIn();
-        fragmentTransaction.replace(R.id.fragment_buttons, fragmentSignIn);
-
-
-        mAuthListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                if(firebaseAuth.getCurrentUser() != null){
-
-                    FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
-                    FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-                    fragmentTransaction.add(R.id.fragment_buttons, fragmentButtonsHome);
-                    fragmentTransaction.commit();
-                }
-
-            }
-        };
+        /*FragmentSignIn fragmentSignIn= new FragmentSignIn();
+        fragmentTransaction.replace(R.id.fragment_buttons, fragmentSignIn);*/
 
 
         //auth add
@@ -166,6 +150,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
 
+        signInButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                signIn();
+            }
+        });
 
 
         //get current location
@@ -223,14 +213,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onStart() {
         super.onStart();
+        // Check if user is signed in (non-null) and update UI accordingly.
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        updateUI(currentUser);
 
-        mAuth.addAuthStateListener(mAuthListener);
+    }
 
+    private void updateUI(FirebaseUser currentUser) {
+        if(currentUser != null) {
+            FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
+            fragmentTransaction.commit();
+        }
     }
 
     private void signIn() {
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         startActivityForResult(signInIntent, RC_SIGN_IN);
+        Log.v(TAG,"Usao u signin");
     }
 
     @Override
@@ -261,13 +262,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            //updateUI(user);
+                            updateUI(user);
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
                             Toast.makeText(MapsActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
-                            //updateUI(null);
+                            updateUI(null);
                         }
 
                         // ...
@@ -673,8 +674,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void initViews(){
-        signInButton = (SignInButton)findViewById(R.id.SgnInBtn);
 
+        signInButton = (SignInButton)findViewById(R.id.SgnInBtn);
         searchButton = (ImageButton) findViewById(R.id.searchButton);
         settingsButton = (ImageButton) findViewById(R.id.settingsButton);
         invent_button = (ImageButton) findViewById(R.id.invent_button);
@@ -901,9 +902,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         FragmentCreateUp fragmentCreateUp = (FragmentCreateUp) getSupportFragmentManager().findFragmentByTag("Details");
         fragmentCreateUp.getTime(timeH, timeM);
     }
-
-    public void signingIn(View v){
-        signIn();
-    }
+    
 }
 
