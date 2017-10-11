@@ -96,7 +96,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            searchMarkers.addListenerForSingleValueEvent(new ValueEventListener() {
+            usersFB.child(userID).child("SearchMarkers").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for(DataSnapshot post : dataSnapshot.getChildren()){
@@ -731,13 +731,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         backPress = 0;
         FragmentSearchUp fragmentSearchUp = (FragmentSearchUp) getSupportFragmentManager().findFragmentByTag("Search");
         fragmentSearchUp.sendRadiusToA();
-        searchMarkers.removeValue();
+        usersFB.child(userID).child("SearchMarkers").removeValue();
         mMap.clear();
 
         Intent i = new Intent(MapsActivity.this, TrackingService.class);
         i.putExtra("lat", myL.getLatitude());
         i.putExtra("lng", myL.getLongitude());
         i.putExtra("radius", radius);
+        i.putExtra("user", userID);
         startService(i);
 
         Toast toast = makeText(getApplicationContext(), "Service started", Toast.LENGTH_SHORT);

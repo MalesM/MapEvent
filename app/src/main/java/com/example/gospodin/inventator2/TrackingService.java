@@ -15,7 +15,7 @@ public class TrackingService extends IntentService{
     private String radius;
     public static final String NOTIFICATION = "com.example.gospodin.inventator2";
     public FirebaseDatabase database = FirebaseDatabase.getInstance();
-    public DatabaseReference flagsFB = database.getReference("Flags");
+    public DatabaseReference users = database.getReference("Users");
     public DatabaseReference markersFB = database.getReference("Markers");
     public DatabaseReference fmarkersFB = database.getReference("SearchMarkers");
 
@@ -27,6 +27,7 @@ public class TrackingService extends IntentService{
     protected void onHandleIntent(@Nullable Intent intent) {
         final double lat = intent.getDoubleExtra("lat", 0);
         final double lng = intent.getDoubleExtra("lng", 0);
+        final String userID = intent.getStringExtra("user");
         radius = intent.getStringExtra("radius");
         final int radiusInt = Integer.parseInt(radius);
 
@@ -36,7 +37,7 @@ public class TrackingService extends IntentService{
                 for(DataSnapshot post : dataSnapshot.getChildren()){
                     MarkerClass m = post.getValue(MarkerClass.class);
                     if(m.distance(lat, lng, m.getLat(), m.getLng()) <=  radiusInt){
-                        fmarkersFB.push().setValue(m);
+                        users.child(userID).child("SearchMarkers").push().setValue(m);
                     }
                 }
                 sendMarkers();
