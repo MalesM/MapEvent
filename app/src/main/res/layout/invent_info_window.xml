@@ -18,6 +18,7 @@
             android:layout_weight="10"
             android:gravity="center"
             android:text="Title"
+            android:textAllCaps="true"
             android:textSize="24sp"
             android:textStyle="bold" />
 
@@ -30,26 +31,23 @@
         android:layout_marginTop="10dp"
         android:gravity="center"
         android:text="Desription"
-        android:textSize="14sp" />
+        android:textAllCaps="true"
+        android:textSize="14sp"
+        android:textStyle="italic" />
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/textView17"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:gravity="center"
+        android:text="Starts at:"
+        android:textAllCaps="true" />
 
-        <TextView
-            android:id="@+id/textView17"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Starts_at:" />
-
-        <TextView
-            android:id="@+id/timeInfo"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
-    </LinearLayout>
+    <TextView
+        android:id="@+id/timeInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textSize="30sp" />
 
 </LinearLayout>

@@ -80,7 +80,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Marker preparedMarker;
     private MarkerClass tempMarker;
     private Circle circle;
-    public DatabaseReference flagsFB, markersFB, searchMarkers, filteredMarkers, all;
+    public DatabaseReference flagsFB, markersFB, searchMarkers, filteredMarkers, all, usersFB, currentUserFB;
+    public FirebaseDatabase database;
     public String key = "";
     public int timeH, timeM, currentH, currentM;
     private String time, timeHH, timeMM;
@@ -89,6 +90,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private FirebaseAuth mAuth;
     GoogleApiClient mGoogleApiClient;
     private static final int RC_SIGN_IN = 2;
+    private String userID;
 
     //broadcast for search markers
     private BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -115,8 +117,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         mAuth = FirebaseAuth.getInstance();
 
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        database = FirebaseDatabase.getInstance();
         all = database.getReference();
+        usersFB = database.getReference("Users");
         markersFB = database.getReference("Markers");
         flagsFB = database.getReference("Flags");
         searchMarkers = database.getReference("SearchMarkers");
@@ -221,6 +224,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void updateUI(FirebaseUser currentUser) {
         if(currentUser != null) {
+
+            Log.v(TAG,""+currentUser.getUid());
+            userID = currentUser.getUid();
+            //currentUserFB = database.getReference(currentUser.getUid());
             FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
             fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
@@ -262,6 +269,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
+                            Log.v(TAG, "Usao u nalog");
                             updateUI(user);
                         } else {
                             // If sign in fails, display a message to the user.
@@ -348,14 +356,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             MarkerClass m = post.getValue(MarkerClass.class);
                             if(m.getLat() == marker.getPosition().latitude && m.getLng() == marker.getPosition().longitude){
                                 tempMarker = m;
-                                for (DataSnapshot post2 : dataSnapshot.child("Favorites").getChildren()) {
+                                for (DataSnapshot post2 : dataSnapshot.child("Users").child(userID).child("Favorites").getChildren()) {
                                     MarkerClass m2 = post2.getValue(MarkerClass.class);
                                     if(m.getLat() == m2.getLat() && m.getLng() == m2.getLng()){favoritesFlag=1;}
                                 }
                             }
                         }
                         if(favoritesFlag==0){
-                            all.child("Favorites").push().setValue(tempMarker);
+                            usersFB.child(userID).child("Favorites").push().setValue(tempMarker);
                             Toast toast = makeText(getApplicationContext(), "Added to favorites", Toast.LENGTH_SHORT);
                             toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
                             toast.show();
@@ -376,7 +384,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onInfoWindowLongClick(final Marker marker) {
 
-                all.child("Favorites").addListenerForSingleValueEvent(new ValueEventListener() {
+                all.child("Users").child(userID).child("Favorites").addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
@@ -404,7 +412,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 }
 
                             }
-                            if(!key.equals("")){all.child("Favorites").child(key).removeValue();}
+                            if(!key.equals("")){all.child("Users").child(userID).child("Favorites").child(key).removeValue();}
                         }
                     }
                     @Override
@@ -512,8 +520,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onPause();
 
         Log.v("Service", "OnPause ");
-        Log.v(TAG, ""+myL.getLatitude()+" "+myL.getLongitude());
-        Log.v(TAG, ""+inventType);
+//        Log.v(TAG, ""+myL.getLatitude()+" "+myL.getLongitude());
+//        Log.v(TAG, ""+inventType);
 
 
         unregisterReceiver(receiver);
@@ -902,6 +910,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         FragmentCreateUp fragmentCreateUp = (FragmentCreateUp) getSupportFragmentManager().findFragmentByTag("Details");
         fragmentCreateUp.getTime(timeH, timeM);
     }
-    
+
 }
 

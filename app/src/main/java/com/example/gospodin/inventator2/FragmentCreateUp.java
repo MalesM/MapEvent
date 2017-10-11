@@ -78,6 +78,10 @@ public class FragmentCreateUp extends Fragment {
     }
 
     public void getTime(int a, int b){
-        timeText.setText(""+a+":"+b);
+        if(b < 10) {
+            timeText.setText("" + a + ":0" + b);
+        }else{
+            timeText.setText("" + a + ":" + b);
+        }
     }
 }
