@@ -15,7 +15,6 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
@@ -114,6 +113,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -435,8 +436,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             for(DataSnapshot post : dataSnapshot.getChildren()){
                                 String k = post.getKey();
                                 MarkerClass m = post.getValue(MarkerClass.class);
-                                String[] s = m.getTime().split(":");
-                                if(Integer.parseInt(s[0])<currentH /*&& Integer.parseInt(s[1])==currentM*/){
+                                String[] s = m.getTime().split("[ :]");
+                                if(Integer.parseInt(s[1])<currentH /*&& Integer.parseInt(s[1])==currentM*/){
                                     markersFB.child(k).removeValue();
                                 }else drawMarker(m);
                             }
@@ -636,7 +637,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         backPress = 0;
         FragmentCreateUp fragmentCreateUp = (FragmentCreateUp) getSupportFragmentManager().findFragmentByTag("Details");
         fragmentCreateUp.sendMarkerInfo();
-        if(!preparedMarker.getTitle().trim().equals("") && inventType!=-1) {
+        if(!preparedMarker.getTitle().trim().equals("") && inventType!=-1 && !time.equals("")) {
             MarkerClass mc = new MarkerClass(preparedMarker.getPosition().latitude, preparedMarker.getPosition().longitude,
                     preparedMarker.getTitle(), preparedMarker.getSnippet(), inventType, time);
 
@@ -648,9 +649,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
             fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
         }else {
-            fragmentCreateUp.error();
-            if(inventType==-1){
+            if(preparedMarker.getTitle().trim().equals("")){
+                fragmentCreateUp.error();
+            }
+            else if(inventType==-1){
                 Toast toast = makeText(getApplicationContext(), "Must select type", Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
+                toast.show();
+            }
+            else if(time.equals("")){
+                Toast toast = makeText(getApplicationContext(), "Must select time", Toast.LENGTH_SHORT);
                 toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
                 toast.show();
             }
@@ -900,17 +908,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     public void setTime(View view){
-        DialogFragment dialogFragment = new TimePickerFragment();
-        dialogFragment.show(getSupportFragmentManager(),"timePicker");
+        TimePickerFragment timePickerFragment = TimePickerFragment.newInstance();
+        timePickerFragment.show(getSupportFragmentManager(),"timePicker");
     }
 
     @Override
-    public void inventTime(int a, int b) {
+    public void inventTime(int a, int b, String d) {
         timeH = a;
         timeM = b;
         FragmentCreateUp fragmentCreateUp = (FragmentCreateUp) getSupportFragmentManager().findFragmentByTag("Details");
-        fragmentCreateUp.getTime(timeH, timeM);
+        fragmentCreateUp.getTime(timeH, timeM, d);
     }
 
+    /*public void todClick(View v){
+        TimePickerFragment timePickerFragment = (TimePickerFragment) getSupportFragmentManager().findFragmentByTag("timePicker");
+        timePickerFragment.callFromActivity();
+    }*/
+
+    /*public void tomClick(View v){
+
+    }*/
 }
 
+//https://youtu.be/5NInMK6LpZw?t=27m1s

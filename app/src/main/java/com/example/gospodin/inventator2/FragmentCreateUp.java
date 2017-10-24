@@ -12,13 +12,21 @@ import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
-public class FragmentCreateUp extends Fragment {
+public class FragmentCreateUp extends Fragment /*implements TimePickerFragment.SendTime*/ {
 
     SendMarkerInfo markerInfo;
     private EditText title, detail;
     private RadioGroup radioGroup;
     private TextView timeText;
 
+    /*@Override
+    public void inventTime(int a, int b) {
+        if(b < 10) {
+            timeText.setText("" + a + ":0" + b);
+        }else{
+            timeText.setText("" + a + ":" + b);
+        }
+    }*/
 
 
     public interface SendMarkerInfo{
@@ -77,11 +85,11 @@ public class FragmentCreateUp extends Fragment {
 
     }
 
-    public void getTime(int a, int b){
+    public void getTime(int a, int b, String day){
         if(b < 10) {
-            timeText.setText("" + a + ":0" + b);
+            timeText.setText(day + " " + a + ":0" + b);
         }else{
-            timeText.setText("" + a + ":" + b);
+            timeText.setText(day + " " + a + ":" + b);
         }
     }
 }

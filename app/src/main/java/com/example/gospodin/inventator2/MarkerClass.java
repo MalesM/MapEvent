@@ -7,6 +7,7 @@ public class MarkerClass {
     private double lat, lng;
     private String title="", description="", time;
     private int type;
+    private int likes;
 
 
     public MarkerClass(){}
@@ -18,6 +19,7 @@ public class MarkerClass {
         this.description = description;
         this.type = type;
         this.time = time;
+        this.likes = 0;
     }
 
     public String getTime() {
@@ -43,6 +45,7 @@ public class MarkerClass {
     public String getDescription() {
         return description;
     }
+
 
     public float distance(double a1, double a2, double b1, double b2){
         float[] result = new float[1];
