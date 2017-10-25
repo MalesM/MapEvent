@@ -5,6 +5,7 @@ import android.location.Location;
 
 public class MarkerClass {
     private double lat, lng;
+    private long timeStamp;
     private String title="", description="", time;
     private int type;
     private int likes;
@@ -12,14 +13,16 @@ public class MarkerClass {
 
     public MarkerClass(){}
 
-    public MarkerClass(Double lat, Double lng, String title, String description, int type, String time){
+    public MarkerClass(Double lat, Double lng, String title, String description, int type, String time, int likes, long timeStamp){
         this.lat = lat;
         this.lng = lng;
         this.title = title;
         this.description = description;
         this.type = type;
         this.time = time;
-        this.likes = 0;
+        this.timeStamp = System.currentTimeMillis();
+        this.likes = likes;
+        this.timeStamp = timeStamp;
     }
 
     public String getTime() {
@@ -46,6 +49,13 @@ public class MarkerClass {
         return description;
     }
 
+    public int getLikes() {
+        return likes;
+    }
+
+    public long getTimeStamp() {
+        return timeStamp;
+    }
 
     public float distance(double a1, double a2, double b1, double b2){
         float[] result = new float[1];

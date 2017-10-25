@@ -436,8 +436,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             for(DataSnapshot post : dataSnapshot.getChildren()){
                                 String k = post.getKey();
                                 MarkerClass m = post.getValue(MarkerClass.class);
-                                String[] s = m.getTime().split("[ :]");
-                                if(Integer.parseInt(s[1])<currentH /*&& Integer.parseInt(s[1])==currentM*/){
+                                //String[] s = m.getTime().split("[ :]");
+                                Log.v(TAG, ""+ m.getTimeStamp());
+                                if( m.getTimeStamp() < (System.currentTimeMillis()/1000/60) /*Integer.parseInt(s[1])<currentH && Integer.parseInt(s[1])==currentM*/){
                                     markersFB.child(k).removeValue();
                                 }else drawMarker(m);
                             }
@@ -638,8 +639,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         FragmentCreateUp fragmentCreateUp = (FragmentCreateUp) getSupportFragmentManager().findFragmentByTag("Details");
         fragmentCreateUp.sendMarkerInfo();
         if(!preparedMarker.getTitle().trim().equals("") && inventType!=-1 && !time.equals("")) {
+            String[] s = time.split("[ :]");
+            Calendar calendar = Calendar.getInstance();
+            long curH = calendar.get(Calendar.HOUR_OF_DAY);
+            long curM = calendar.get(Calendar.MINUTE);
+            long eH = Long.parseLong(s[1]);
+            long eM = Long.parseLong(s[2]);
+            long curMillis = System.currentTimeMillis()/1000/60;
+            long markerTime;
+
+            if(s[0].equals("today")) {
+                markerTime = (eH - curH)*60 + eM - curM + curMillis;
+            } else {markerTime = (eH - curH + 24)*60 + eM - curM + curMillis;}
+
             MarkerClass mc = new MarkerClass(preparedMarker.getPosition().latitude, preparedMarker.getPosition().longitude,
-                    preparedMarker.getTitle(), preparedMarker.getSnippet(), inventType, time);
+                    preparedMarker.getTitle(), preparedMarker.getSnippet(), inventType, time, 0, markerTime);
 
             markersFB.push().setValue(mc);
 
