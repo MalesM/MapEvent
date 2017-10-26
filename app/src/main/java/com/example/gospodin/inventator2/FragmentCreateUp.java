@@ -19,15 +19,6 @@ public class FragmentCreateUp extends Fragment /*implements TimePickerFragment.S
     private RadioGroup radioGroup;
     private TextView timeText;
 
-    /*@Override
-    public void inventTime(int a, int b) {
-        if(b < 10) {
-            timeText.setText("" + a + ":0" + b);
-        }else{
-            timeText.setText("" + a + ":" + b);
-        }
-    }*/
-
 
     public interface SendMarkerInfo{
 

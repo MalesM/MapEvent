@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -15,9 +16,10 @@ public class FragmentSearchUp extends Fragment {
     SendRadius sendRadius;
     TextView distance;
     SeekBar seekBar;
+    CheckBox c1, c2, c3, c4;
 
     public interface SendRadius{
-        void getRadius(String r);
+        void getRadius(String r, String searchType);
     }
 
     @Nullable
@@ -44,6 +46,12 @@ public class FragmentSearchUp extends Fragment {
             }
         });
 
+        c1 = (CheckBox) v.findViewById(R.id.cbS);
+        c2 = (CheckBox) v.findViewById(R.id.cbC);
+        c3 = (CheckBox) v.findViewById(R.id.cbP);
+        c4 = (CheckBox) v.findViewById(R.id.cbF);
+
+
         return v;
     }
 
@@ -59,6 +67,11 @@ public class FragmentSearchUp extends Fragment {
         }
     }
     public void sendRadiusToA(){
-        sendRadius.getRadius(distance.getText().toString());
+        String s = "";
+        if(c1.isChecked()){s += "0";}
+        if(c2.isChecked()){s += "1";}
+        if(c3.isChecked()){s += "2";}
+        if(c4.isChecked()){s += "3";}
+        sendRadius.getRadius(distance.getText().toString(), s);
     }
 }

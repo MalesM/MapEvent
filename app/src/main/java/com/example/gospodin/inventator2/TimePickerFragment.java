@@ -12,7 +12,7 @@ import android.widget.Button;
 import android.widget.TimePicker;
 
 
-public class TimePickerFragment extends DialogFragment /*implements TimePickerDialog.OnTimeSetListener*/ {
+public class TimePickerFragment extends DialogFragment{
 
     SendTime sendTime;
     TimePicker tp;
@@ -64,8 +64,6 @@ public class TimePickerFragment extends DialogFragment /*implements TimePickerDi
         });
     }
 
-
-
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -78,40 +76,4 @@ public class TimePickerFragment extends DialogFragment /*implements TimePickerDi
 
         }
     }
-
-    /*@Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        final Calendar c = Calendar.getInstance();
-        int hour = c.get(Calendar.HOUR_OF_DAY);
-        int minute = c.get(Calendar.MINUTE);
-
-        // Create a new instance of TimePickerDialog and return it
-        return new TimePickerDialog(getActivity(), this, hour, minute,
-                DateFormat.is24HourFormat(getActivity()));
-
-    }
-
-    @Override
-    public void onTimeSet(TimePicker timePicker, int i, int i1) {
-        h = i;
-        m = i1;
-        pickedTime();
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-
-        try {
-            sendTime = (SendTime) context;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString()
-                    + " must implement OnHeadlineSelectedListener");
-
-        }
-    }
-
-    public void pickedTime(){
-        sendTime.inventTime(h,m);
-    }*/
 }

@@ -79,11 +79,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Marker preparedMarker;
     private MarkerClass tempMarker;
     private Circle circle;
-    public DatabaseReference flagsFB, markersFB, searchMarkers, filteredMarkers, all, usersFB, currentUserFB;
+    public DatabaseReference flagsFB, markersFB, searchMarkers, filteredMarkers, all, usersFB;
     public FirebaseDatabase database;
     public String key = "";
     public int timeH, timeM, currentH, currentM;
-    private String time, timeHH, timeMM;
+    private String time;
+    private String searchTypes;
+
 
     private SignInButton signInButton;
     private FirebaseAuth mAuth;
@@ -718,6 +720,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+    //marker properties
     public void drawMarker(MarkerClass m){
         switch (m.getType()) {
             case 0:
@@ -751,27 +754,38 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     // apply radius
     public void searchfInvent(View view){
         backPress = 0;
+
         FragmentSearchUp fragmentSearchUp = (FragmentSearchUp) getSupportFragmentManager().findFragmentByTag("Search");
         fragmentSearchUp.sendRadiusToA();
-        usersFB.child(userID).child("SearchMarkers").removeValue();
-        mMap.clear();
 
-        Intent i = new Intent(MapsActivity.this, TrackingService.class);
-        i.putExtra("lat", myL.getLatitude());
-        i.putExtra("lng", myL.getLongitude());
-        i.putExtra("radius", radius);
-        i.putExtra("user", userID);
-        startService(i);
+        if(!searchTypes.equals("")) {
 
-        Toast toast = makeText(getApplicationContext(), "Service started", Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
-        toast.show();
+            usersFB.child(userID).child("SearchMarkers").removeValue();
+            mMap.clear();
 
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
-        fragmentTransaction.commit();
-        FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
-        fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
+            Intent i = new Intent(MapsActivity.this, TrackingService.class);
+            i.putExtra("lat", myL.getLatitude());
+            i.putExtra("lng", myL.getLongitude());
+            i.putExtra("radius", radius);
+            i.putExtra("user", userID);
+            i.putExtra("type", searchTypes);
+            startService(i);
+
+            Toast toast = makeText(getApplicationContext(), "Service started", Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+            toast.show();
+
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
+            fragmentTransaction.commit();
+            FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
+            fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
+            Log.v(TAG, searchTypes);
+        }else {
+            Toast toast = makeText(getApplicationContext(), "Must select type", Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
+            toast.show();
+        }
     }
 
     //go to settings fragment
@@ -837,8 +851,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //get radius from search Fragment
     @Override
-    public void getRadius(String r) {
+    public void getRadius(String r, String t) {
         radius = r;
+        searchTypes = t;
     }
 
     //get information from settings Fragment
@@ -934,14 +949,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         fragmentCreateUp.getTime(timeH, timeM, d);
     }
 
-    /*public void todClick(View v){
-        TimePickerFragment timePickerFragment = (TimePickerFragment) getSupportFragmentManager().findFragmentByTag("timePicker");
-        timePickerFragment.callFromActivity();
-    }*/
-
-    /*public void tomClick(View v){
-
-    }*/
 }
 
 //https://youtu.be/5NInMK6LpZw?t=27m1s

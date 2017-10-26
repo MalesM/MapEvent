@@ -160,7 +160,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:onClick="setTime"
-            android:text="set time" />
+            android:text="set start time" />
 
         <TextView
             android:id="@+id/timeText"

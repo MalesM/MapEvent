@@ -17,7 +17,6 @@ public class TrackingService extends IntentService{
     public FirebaseDatabase database = FirebaseDatabase.getInstance();
     public DatabaseReference users = database.getReference("Users");
     public DatabaseReference markersFB = database.getReference("Markers");
-    public DatabaseReference fmarkersFB = database.getReference("SearchMarkers");
 
     public TrackingService() {
         super("TrackingService");
@@ -28,6 +27,7 @@ public class TrackingService extends IntentService{
         final double lat = intent.getDoubleExtra("lat", 0);
         final double lng = intent.getDoubleExtra("lng", 0);
         final String userID = intent.getStringExtra("user");
+        final String types = intent.getStringExtra("type");
         radius = intent.getStringExtra("radius");
         final int radiusInt = Integer.parseInt(radius);
 
@@ -36,7 +36,8 @@ public class TrackingService extends IntentService{
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot post : dataSnapshot.getChildren()){
                     MarkerClass m = post.getValue(MarkerClass.class);
-                    if(m.distance(lat, lng, m.getLat(), m.getLng()) <=  radiusInt){
+                    String a = Integer.toString(m.getType());
+                    if(m.distance(lat, lng, m.getLat(), m.getLng()) <=  radiusInt && types.contains(a)){
                         users.child(userID).child("SearchMarkers").push().setValue(m);
                     }
                 }
