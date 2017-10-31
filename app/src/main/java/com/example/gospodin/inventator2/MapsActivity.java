@@ -440,7 +440,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 MarkerClass m = post.getValue(MarkerClass.class);
                                 //String[] s = m.getTime().split("[ :]");
                                 Log.v(TAG, ""+ m.getTimeStamp());
-                                if( m.getTimeStamp() < (System.currentTimeMillis()/1000/60) /*Integer.parseInt(s[1])<currentH && Integer.parseInt(s[1])==currentM*/){
+                                if( m.getTimeStamp() < (System.currentTimeMillis()/1000/60)){
                                     markersFB.child(k).removeValue();
                                 }else drawMarker(m);
                             }
@@ -935,12 +935,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return (m1.getLat() == m2.getLat() && m1.getLng() == m2.getLng());
     }
 
-
+    //create time picker
     public void setTime(View view){
         TimePickerFragment timePickerFragment = TimePickerFragment.newInstance();
         timePickerFragment.show(getSupportFragmentManager(),"timePicker");
     }
 
+    //get time from picker
     @Override
     public void inventTime(int a, int b, String d) {
         timeH = a;
@@ -948,7 +949,4 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         FragmentCreateUp fragmentCreateUp = (FragmentCreateUp) getSupportFragmentManager().findFragmentByTag("Details");
         fragmentCreateUp.getTime(timeH, timeM, d);
     }
-
 }
-
-//https://youtu.be/5NInMK6LpZw?t=27m1s
