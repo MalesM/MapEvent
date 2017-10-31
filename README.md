@@ -1,9 +1,9 @@
-# Inventator2
-Google map invent maker for android
+# Eventator2
+Google map event maker for android
 
 
-Version 1.0 (just beginning)
-* Easy make Invent (Marker) near you with title and desciption (for now)
-* Filter Invents in specific radius
-* Real time tracking Invent in given radius and notify if there is new Invent near you
+Version 2.0 
+* Easy make Event (Marker) near you with title, desciption, type and starting time
+* Filter Events in specific radius
+* Real time tracking Event in given radius and notify if there is new Event near you
 
