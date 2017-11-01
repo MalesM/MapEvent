@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -23,9 +24,10 @@ public class FragmentSettingsUp extends Fragment{
     SeekBar seekBar2;
     Switch switch1;
     TrackingSettings trackingSettings;
+    CheckBox c1, c2, c3, c4;
 
     public interface TrackingSettings{
-        void setTracking(String radius, boolean track);
+        void setTracking(String radius, boolean track, String typeS);
     }
 
     @Nullable
@@ -34,13 +36,13 @@ public class FragmentSettingsUp extends Fragment{
         View v = inflater.inflate(R.layout.settings_up_fragment, container, false);
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference flagsFB = database.getReference("Flags");
+        DatabaseReference usersFlags = database.getReference("Users").child(MapsActivity.userID).child("Flags");
         distanceTextSettings = (TextView) v.findViewById(R.id.distanceTextSettings);
         switch1 = (Switch) v.findViewById(R.id.switch1);
         seekBar2 = (SeekBar) v.findViewById(R.id.seekBar2);
         seekBar2.setMax(1000);
 
-        flagsFB.child("settingsRadius").addListenerForSingleValueEvent(new ValueEventListener() {
+        usersFlags.child("settingsRadius").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 int i = dataSnapshot.getValue(Integer.class);
@@ -54,7 +56,7 @@ public class FragmentSettingsUp extends Fragment{
             }
         });
 
-        flagsFB.child("settingsSwitch").addListenerForSingleValueEvent(new ValueEventListener() {
+        usersFlags.child("settingsSwitch").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 switch1.setChecked(dataSnapshot.getValue(Boolean.class));
@@ -83,6 +85,11 @@ public class FragmentSettingsUp extends Fragment{
             }
         });
 
+        c1 = (CheckBox) v.findViewById(R.id.cbSt);
+        c2 = (CheckBox) v.findViewById(R.id.cbCt);
+        c3 = (CheckBox) v.findViewById(R.id.cbPt);
+        c4 = (CheckBox) v.findViewById(R.id.cbFt);
+
 
         return v;
     }
@@ -99,6 +106,11 @@ public class FragmentSettingsUp extends Fragment{
     }
 
     public void getSettings(){
-        trackingSettings.setTracking(distanceTextSettings.getText().toString(), switch1.isChecked());
+        String s = "";
+        if(c1.isChecked()){s += "0";}
+        if(c2.isChecked()){s += "1";}
+        if(c3.isChecked()){s += "2";}
+        if(c4.isChecked()){s += "3";}
+        trackingSettings.setTracking(distanceTextSettings.getText().toString(), switch1.isChecked(), s);
     }
 }

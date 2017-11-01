@@ -85,13 +85,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public int timeH, timeM, currentH, currentM;
     private String time;
     private String searchTypes;
-
+    private String typeSettings;
 
     private SignInButton signInButton;
     private FirebaseAuth mAuth;
     GoogleApiClient mGoogleApiClient;
     private static final int RC_SIGN_IN = 2;
-    private String userID;
+    public static String userID;
 
     //broadcast for search markers
     private BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -110,6 +110,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             });
         }
     };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -525,7 +526,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         Log.v("Service", "OnPause ");
 //        Log.v(TAG, ""+myL.getLatitude()+" "+myL.getLongitude());
-//        Log.v(TAG, ""+inventType);
+//        Log.v(TAG, ""+eventType);
 
 
         unregisterReceiver(receiver);
@@ -552,7 +553,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }else{cancelAlarm();}
     }
 
-    //Click invent on home screen
+    //Click event on home screen
     public void createInvent(View view){
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
@@ -807,46 +808,60 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         FragmentSettingsUp fragmentSettingsUp = (FragmentSettingsUp) getSupportFragmentManager().findFragmentByTag("Settings");
         fragmentSettingsUp.getSettings();
 
-        flagsFB.child("settingsSwitch").setValue(startService);
-        flagsFB.child("settingsRadius").setValue(Integer.parseInt(radiusSettings));
+        Log.v(TAG, typeSettings);
 
-        if(startService ){
-            Toast toast = Toast.makeText(getApplicationContext(), "Tracking started", Toast.LENGTH_SHORT);
+        if(!typeSettings.equals("")) {
+            usersFB.child(userID).child("Flags").child("settingsSwitch").setValue(startService);
+            usersFB.child(userID).child("Flags").child("settingsRadius").setValue(Integer.parseInt(radiusSettings));
+            usersFB.child(userID).child("Flags").child("settingsType").setValue(typeSettings);
+
+            //flagsFB.child("settingsSwitch").setValue(startService);
+            //flagsFB.child("settingsRadius").setValue(Integer.parseInt(radiusSettings));
+
+            if (startService) {
+                Toast toast = Toast.makeText(getApplicationContext(), "Tracking started", Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                toast.show();
+
+                Log.i(TAG, " " + circleDraw);
+
+                if (circleDraw == 0) {
+                    circleDraw = 1;
+                    if (circleFlag == 1) {
+                        circle.remove();
+                    }
+                    circle = mMap.addCircle(new CircleOptions()
+                            .center(new LatLng(myL.getLatitude(), myL.getLongitude()))
+                            .radius(Double.parseDouble(radiusSettings))
+                            .strokeWidth(2)
+                            .strokeColor(Color.RED)
+                            .fillColor(Color.parseColor("#500084d3")));
+                } else {
+                    circleDraw = 0;
+                    circleFlag = 1;
+                    circle.remove();
+                    circle = mMap.addCircle(new CircleOptions()
+                            .center(new LatLng(myL.getLatitude(), myL.getLongitude()))
+                            .radius(Double.parseDouble(radiusSettings))
+                            .strokeWidth(2)
+                            .strokeColor(Color.RED)
+                            .fillColor(Color.parseColor("#500084d3")));
+
+                }
+            } else {
+                if (circleFlag == 1) circle.remove();
+            }
+
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
+            fragmentTransaction.commit();
+            FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
+            fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
+        }else{
+            Toast toast = makeText(getApplicationContext(), "Must select type", Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
             toast.show();
-
-            Log.i(TAG, " "+circleDraw);
-
-            if(circleDraw == 0) {
-                circleDraw = 1;
-                if(circleFlag == 1) {
-                    circle.remove();
-                }
-                circle = mMap.addCircle(new CircleOptions()
-                        .center(new LatLng(myL.getLatitude(), myL.getLongitude()))
-                        .radius(Double.parseDouble(radiusSettings))
-                        .strokeWidth(2)
-                        .strokeColor(Color.RED)
-                        .fillColor(Color.parseColor("#500084d3")));
-            }else{
-                circleDraw = 0;
-                circleFlag = 1;
-                circle.remove();
-                circle = mMap.addCircle(new CircleOptions()
-                        .center(new LatLng(myL.getLatitude(), myL.getLongitude()))
-                        .radius(Double.parseDouble(radiusSettings))
-                        .strokeWidth(2)
-                        .strokeColor(Color.RED)
-                        .fillColor(Color.parseColor("#500084d3")));
-
-            }
-        } else{if(circleFlag == 1)circle.remove();}
-
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, getSupportFragmentManager().findFragmentByTag("Map"));
-        fragmentTransaction.commit();
-        FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
-        fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
+        }
     }
 
     //get radius from search Fragment
@@ -858,8 +873,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //get information from settings Fragment
     @Override
-    public void setTracking(String radius, boolean track) {
+    public void setTracking(String radius, boolean track, String type) {
         radiusSettings = radius;
+        typeSettings = type;
         startService = track;
     }
 
