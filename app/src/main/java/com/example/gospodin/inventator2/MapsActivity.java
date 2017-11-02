@@ -126,8 +126,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         usersFB = database.getReference("Users");
         markersFB = database.getReference("Markers");
         flagsFB = database.getReference("Flags");
-        searchMarkers = database.getReference("SearchMarkers");
-        filteredMarkers = database.getReference("FilteredMarkers");
+        //searchMarkers = database.getReference("SearchMarkers");
+        //filteredMarkers = database.getReference("FilteredMarkers");
 
         initViews();
 
@@ -493,10 +493,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        Date date = new Date();
 //        DateFormat dateFormat = new SimpleDateFormat("HH");
 
-        filteredMarkers.removeValue();
+        //filteredMarkers.removeValue();
+        usersFB.child(userID).child("FilteredMarkers").removeValue();
         cancelAlarm();
         registerReceiver(receiver, new IntentFilter(TrackingService.NOTIFICATION));
-        flagsFB.child("settingsSwitch").addListenerForSingleValueEvent(new ValueEventListener() {
+        usersFB.child(userID).child("Flags").child("settingsSwitch").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 startService = dataSnapshot.getValue(boolean.class);
@@ -507,7 +508,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         });
-        flagsFB.child("settingsRadius").addListenerForSingleValueEvent(new ValueEventListener() {
+        usersFB.child(userID).child("Flags").child("settingsRadius").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 radiusSettings = Integer.toString(dataSnapshot.getValue(Integer.class));
@@ -538,8 +539,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for(DataSnapshot post : dataSnapshot.getChildren()){
                         MarkerClass m = post.getValue(MarkerClass.class);
-                        if(m.distance(myL.getLatitude(), myL.getLongitude(), m.getLat(), m.getLng()) <=  Integer.parseInt(radiusSettings)){
-                            filteredMarkers.push().setValue(m);
+                        String a = Integer.toString(m.getType());
+                        if(m.distance(myL.getLatitude(), myL.getLongitude(), m.getLat(), m.getLng()) <=  Integer.parseInt(radiusSettings) && typeSettings.contains(a)){
+                            usersFB.child(userID).child("FilteredMarkers").push().setValue(m);
                         }
                     }
                 }

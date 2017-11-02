@@ -28,6 +28,7 @@ public class TrackInvents extends IntentService  {
     public Location myL;
     public DatabaseReference allFB,flagsFB, markersFB, filteredMarkers;
     int distance, added = 0, contains = 0;
+    private String id = MapsActivity.userID;
 
 
     public TrackInvents() {
@@ -94,14 +95,14 @@ public class TrackInvents extends IntentService  {
                         allFB.addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
-                                distance = dataSnapshot.child("Flags").child("settingsRadius").getValue(Integer.class);
-                                long size = dataSnapshot.child("FilteredMarkers").getChildrenCount();
+                                distance = dataSnapshot.child("Users").child(id).child("Flags").child("settingsRadius").getValue(Integer.class);
+                                long size = dataSnapshot.child("Users").child(id).child("FilteredMarkers").getChildrenCount();
                                 //Log.i(TAG, ""+distance);
                                 //Log.i(TAG, ""+size);
                                 for(DataSnapshot markers : dataSnapshot.child("Markers").getChildren()){
                                     MarkerClass m = markers.getValue(MarkerClass.class);
                                     if(m.distance(myL.getLatitude(), myL.getLongitude(), m.getLat(), m.getLng()) <= distance){
-                                        for(DataSnapshot filter : dataSnapshot.child("FilteredMarkers").getChildren()){
+                                        for(DataSnapshot filter : dataSnapshot.child("Users").child(id).child("FilteredMarkers").getChildren()){
                                             MarkerClass mm = filter.getValue(MarkerClass.class);
                                             if (m.getLat() == mm.getLat() && m.getLng() == mm.getLng()){
                                                 contains++;
@@ -113,8 +114,9 @@ public class TrackInvents extends IntentService  {
                                         Log.i(TAG, ""+contains);
                                         Log.i(TAG, ""+size);
                                         if(contains == 0){
-                                            filteredMarkers.push().setValue(m);
-                                            allFB.child("NewFromService").push().setValue(m);
+                                            allFB.child("Users").child(id).child("FilteredMarkers").push().setValue(m);
+                                            allFB.child("Users").child(id).child("NewFromService").push().setValue(m);
+                                            //allFB.child("NewFromService").push().setValue(m);
                                             contains = 0;
                                             size++;
                                             added++;
