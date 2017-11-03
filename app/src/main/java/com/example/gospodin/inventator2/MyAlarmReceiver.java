@@ -12,6 +12,7 @@ public class MyAlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Intent i = new Intent(context, TrackInvents.class);
+        i.putExtra("userID", intent.getStringExtra("UserID"));
         context.startService(i);
     }
 }

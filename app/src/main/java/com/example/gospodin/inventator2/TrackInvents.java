@@ -28,7 +28,7 @@ public class TrackInvents extends IntentService  {
     public Location myL;
     public DatabaseReference allFB,flagsFB, markersFB, filteredMarkers;
     int distance, added = 0, contains = 0;
-    private String id = MapsActivity.userID;
+    //private String id = MapsActivity.userID;
 
 
     public TrackInvents() {
@@ -88,6 +88,7 @@ public class TrackInvents extends IntentService  {
     @Override
     protected void onHandleIntent(@Nullable final Intent intent) {
 
+        final String id = intent.getStringExtra("userID");
         new java.util.Timer().schedule(
                 new java.util.TimerTask() {
                     @Override
@@ -125,6 +126,7 @@ public class TrackInvents extends IntentService  {
                                 }
                                 if(added != 0){
                                     Intent i = new Intent(getApplicationContext(), MapsActivity.class);
+                                    i.putExtra("notification", true);
                                     PendingIntent pendingIntent =
                                             PendingIntent.getActivity(getApplicationContext(),0, i, PendingIntent.FLAG_UPDATE_CURRENT );
 

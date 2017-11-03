@@ -86,6 +86,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private String time;
     private String searchTypes;
     private String typeSettings;
+    private boolean startFromNotification = false;
 
     private SignInButton signInButton;
     private FirebaseAuth mAuth;
@@ -103,6 +104,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     for(DataSnapshot post : dataSnapshot.getChildren()){
                          drawMarker(post.getValue(MarkerClass.class));
                     }
+                    usersFB.child(userID).child("SearchMarkers").removeValue();
                 }
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
@@ -117,8 +119,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-
-
+        if(getIntent().getBooleanExtra("notification", false))startFromNotification = true;
         mAuth = FirebaseAuth.getInstance();
 
         database = FirebaseDatabase.getInstance();
@@ -495,6 +496,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //filteredMarkers.removeValue();
         usersFB.child(userID).child("FilteredMarkers").removeValue();
+        if(!startFromNotification) usersFB.child(userID).child("NewFromService").removeValue();
         cancelAlarm();
         registerReceiver(receiver, new IntentFilter(TrackingService.NOTIFICATION));
         usersFB.child(userID).child("Flags").child("settingsSwitch").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -727,16 +729,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void drawMarker(MarkerClass m){
         switch (m.getType()) {
             case 0:
-                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.sport0));
                 break;
             case 1:
-                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.kultura0));
                 break;
             case 2:
-                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.klabing0));
                 break;
             case 3:
-                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ugostiteljstvo0));
                 break;
         }
     }
@@ -884,6 +886,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //service check for new Invents after some time
     public void scheduleAlarrm(){
         Intent intent = new Intent(getApplicationContext(), MyAlarmReceiver.class);
+        intent.putExtra("UserID", userID);
         final PendingIntent pendingIntent = PendingIntent.getBroadcast(this, MyAlarmReceiver.REQUEST_CODE,
                 intent, PendingIntent.FLAG_UPDATE_CURRENT);
         long firstMillis = System.currentTimeMillis();
