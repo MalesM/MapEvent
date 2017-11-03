@@ -98,11 +98,13 @@ public class TrackInvents extends IntentService  {
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 distance = dataSnapshot.child("Users").child(id).child("Flags").child("settingsRadius").getValue(Integer.class);
                                 long size = dataSnapshot.child("Users").child(id).child("FilteredMarkers").getChildrenCount();
+                                String types = dataSnapshot.child("Users").child(id).child("Flags").child("settingsType").getValue(String.class);
                                 //Log.i(TAG, ""+distance);
                                 //Log.i(TAG, ""+size);
                                 for(DataSnapshot markers : dataSnapshot.child("Markers").getChildren()){
                                     MarkerClass m = markers.getValue(MarkerClass.class);
-                                    if(m.distance(myL.getLatitude(), myL.getLongitude(), m.getLat(), m.getLng()) <= distance){
+                                    String a = Integer.toString(m.getType());
+                                    if(m.distance(myL.getLatitude(), myL.getLongitude(), m.getLat(), m.getLng()) <= distance && types.contains(a)){
                                         for(DataSnapshot filter : dataSnapshot.child("Users").child(id).child("FilteredMarkers").getChildren()){
                                             MarkerClass mm = filter.getValue(MarkerClass.class);
                                             if (m.getLat() == mm.getLat() && m.getLng() == mm.getLng()){
@@ -125,6 +127,7 @@ public class TrackInvents extends IntentService  {
                                     }
                                 }
                                 if(added != 0){
+                                    added += dataSnapshot.child("Users").child(id).child("NewFromService").getChildrenCount();
                                     Intent i = new Intent(getApplicationContext(), MapsActivity.class);
                                     i.putExtra("notification", true);
                                     PendingIntent pendingIntent =
@@ -134,7 +137,7 @@ public class TrackInvents extends IntentService  {
                                             new NotificationCompat.Builder(getApplicationContext())
                                                     .setSmallIcon(R.drawable.search)
                                                     .setContentTitle("New Invent!")
-                                                    .setContentText("total: "+added)
+                                                    .setContentText("total: "+ added)
                                                     .setAutoCancel(true)
                                                     .setContentIntent(pendingIntent);
                                     NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);

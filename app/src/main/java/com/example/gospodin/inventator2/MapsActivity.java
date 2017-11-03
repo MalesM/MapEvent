@@ -79,7 +79,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Marker preparedMarker;
     private MarkerClass tempMarker;
     private Circle circle;
-    public DatabaseReference flagsFB, markersFB, searchMarkers, filteredMarkers, all, usersFB;
+    public DatabaseReference flagsFB, markersFB, all, usersFB;
     public FirebaseDatabase database;
     public String key = "";
     public int timeH, timeM, currentH, currentM;
@@ -127,8 +127,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         usersFB = database.getReference("Users");
         markersFB = database.getReference("Markers");
         flagsFB = database.getReference("Flags");
-        //searchMarkers = database.getReference("SearchMarkers");
-        //filteredMarkers = database.getReference("FilteredMarkers");
 
         initViews();
 
@@ -140,7 +138,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMapFragment.getMapAsync(this);
         /*FragmentSignIn fragmentSignIn= new FragmentSignIn();
         fragmentTransaction.replace(R.id.fragment_buttons, fragmentSignIn);*/
-
 
         //auth add
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -402,16 +399,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     toast.show();
                                     switch (m.getType()) {
                                         case 0:
-                                            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.sport0));
                                             break;
                                         case 1:
-                                            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.kultura0));
                                             break;
                                         case 2:
-                                            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.klabing0));
                                             break;
                                         case 3:
-                                            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ugostiteljstvo0));
                                             break;
                                     }
                                 }
