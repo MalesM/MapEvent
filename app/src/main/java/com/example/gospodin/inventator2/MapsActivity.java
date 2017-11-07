@@ -512,10 +512,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         currentH = c.get(Calendar.HOUR_OF_DAY);
         currentM = c.get(Calendar.MINUTE);
 
-//        Date date = new Date();
-//        DateFormat dateFormat = new SimpleDateFormat("HH");
-
-        //filteredMarkers.removeValue();
         usersFB.child(userID).child("FilteredMarkers").removeValue();
         if(!startFromNotification) usersFB.child(userID).child("NewFromService").removeValue();
         cancelAlarm();
