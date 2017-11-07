@@ -369,7 +369,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             Toast toast = makeText(getApplicationContext(), "Added to favorites", Toast.LENGTH_SHORT);
                             toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
                             toast.show();
-                            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+                            switch (tempMarker.getType()){
+                                case 0:
+                                    marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mfsport));
+                                    break;
+                                case 1:
+                                    marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mfculture));
+                                    break;
+                                case 2:
+                                    marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mfparty));
+                                    break;
+                                case 3:
+                                    marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mffood));
+                                    break;
+                            }
                         }else favoritesFlag = 0;
                     }
 
@@ -399,16 +412,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     toast.show();
                                     switch (m.getType()) {
                                         case 0:
-                                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.sport0));
+                                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.msport));
                                             break;
                                         case 1:
-                                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.kultura0));
+                                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mculture));
                                             break;
                                         case 2:
-                                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.klabing0));
+                                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mparty));
                                             break;
                                         case 3:
-                                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ugostiteljstvo0));
+                                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mfood));
                                             break;
                                     }
                                 }
@@ -693,16 +706,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         time = ttime;
         switch (inventType){
             case 0:
-                preparedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                preparedMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.msport));
                 break;
             case 1:
-                preparedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                preparedMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mculture));
                 break;
             case 2:
-                preparedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                preparedMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mparty));
                 break;
             case 3:
-                preparedMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                preparedMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mfood));
                 break;
         }
     }
@@ -726,16 +739,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void drawMarker(MarkerClass m){
         switch (m.getType()) {
             case 0:
-                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.sport0));
+                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.msport));
                 break;
             case 1:
-                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.kultura0));
+                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mculture));
                 break;
             case 2:
-                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.klabing0));
+                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mparty));
                 break;
             case 3:
-                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ugostiteljstvo0));
+                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mfood));
                 break;
         }
     }
