@@ -439,29 +439,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
         // draw all markers on map
-        flagsFB.addListenerForSingleValueEvent(new ValueEventListener() {
+        all.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                boolean haveM = dataSnapshot.child("haveMarkers").getValue(boolean.class);
-                if(haveM){
-                    markersFB.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            for(DataSnapshot post : dataSnapshot.getChildren()){
-                                String k = post.getKey();
-                                MarkerClass m = post.getValue(MarkerClass.class);
-                                //String[] s = m.getTime().split("[ :]");
-                                Log.v(TAG, ""+ m.getTimeStamp());
-                                if( m.getTimeStamp() < (System.currentTimeMillis()/1000/60)){
-                                    markersFB.child(k).removeValue();
-                                }else drawMarker(m);
+                if(startFromNotification){
+                    for (DataSnapshot ds: dataSnapshot.child("Users").child(userID).child("NewFromService").getChildren())
+                        drawTrackedMarker(ds.getValue(MarkerClass.class));
+                }else {
+                    for (DataSnapshot post : dataSnapshot.child("Markers").getChildren()) {
+                        String k = post.getKey();
+                        MarkerClass m = post.getValue(MarkerClass.class);
+                        //String[] s = m.getTime().split("[ :]");
+                        Log.v(TAG, "" + m.getTimeStamp());
+                        if (m.getTimeStamp() < (System.currentTimeMillis() / 1000 / 60)) {
+                            markersFB.child(k).removeValue();
+                        } else {
+                            int ii = 0;
+                            for (DataSnapshot post2 : dataSnapshot.child("Users").child(userID).child("Favorites").getChildren()) {
+                                MarkerClass m2 = post2.getValue(MarkerClass.class);
+                                if (m2.getLng() == m.getLng() && m2.getLat() == m.getLat()) ii++;
                             }
+                            if (ii == 0) drawMarker(m);
                         }
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
+                    }
 
-                        }
-                    });
+                    for (DataSnapshot post : dataSnapshot.child("Users").child(userID).child("Favorites").getChildren()) {
+                        String k = post.getKey();
+                        MarkerClass m = post.getValue(MarkerClass.class);
+                        //String[] s = m.getTime().split("[ :]");
+                        Log.v(TAG, "" + m.getTimeStamp());
+                        if (m.getTimeStamp() < (System.currentTimeMillis() / 1000 / 60)) {
+                            all.child("Users").child(userID).child("Favorites").child(k).removeValue();
+                        } else drawFavoriteMarker(m);
+                    }
                 }
             }
 
@@ -749,6 +759,40 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 break;
             case 3:
                 mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mfood));
+                break;
+        }
+    }
+
+    public void drawFavoriteMarker(MarkerClass m){
+        switch (m.getType()) {
+            case 0:
+                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mfsport));
+                break;
+            case 1:
+                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mfculture));
+                break;
+            case 2:
+                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mfparty));
+                break;
+            case 3:
+                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mffood));
+                break;
+        }
+    }
+
+    public void drawTrackedMarker(MarkerClass m){
+        switch (m.getType()) {
+            case 0:
+                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mtsport));
+                break;
+            case 1:
+                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mtculture));
+                break;
+            case 2:
+                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mtparty));
+                break;
+            case 3:
+                mMap.addMarker(new MarkerOptions().position(new LatLng(m.getLat(), m.getLng())).title(m.getTitle()).snippet(m.getDescription())).setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mtfood));
                 break;
         }
     }
