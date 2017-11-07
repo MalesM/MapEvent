@@ -445,6 +445,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if(startFromNotification){
                     for (DataSnapshot ds: dataSnapshot.child("Users").child(userID).child("NewFromService").getChildren())
                         drawTrackedMarker(ds.getValue(MarkerClass.class));
+                    all.child("Users").child(userID).child("NewFromService").removeValue();
                 }else {
                     for (DataSnapshot post : dataSnapshot.child("Markers").getChildren()) {
                         String k = post.getKey();
