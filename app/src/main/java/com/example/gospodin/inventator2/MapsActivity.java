@@ -70,8 +70,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Button  confirm_button, cancel_button, cancel_button2;
     private ImageButton settingsButton, searchButton, invent_button;
     private EditText title;
-    private String radius, radiusSettings;
-    private boolean startService;
+    private String radius, radiusSettings = "" ;
+    private boolean startService = false;
     public Location myL;
     private int firstZoom = 0, mapReady = 0, circleDraw = 0, circleFlag = 0, favoritesFlag = 0, timeShow = 0;
     private int backPress = 0;
@@ -85,14 +85,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public int timeH, timeM, currentH, currentM;
     private String time;
     private String searchTypes;
-    private String typeSettings;
+    private String typeSettings = "";
     private boolean startFromNotification = false;
 
     private SignInButton signInButton;
     private FirebaseAuth mAuth;
     GoogleApiClient mGoogleApiClient;
     private static final int RC_SIGN_IN = 2;
-    public static String userID;
+    public static String userID = "";
 
     //broadcast for search markers
     private BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -126,7 +126,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         all = database.getReference();
         usersFB = database.getReference("Users");
         markersFB = database.getReference("Markers");
-        flagsFB = database.getReference("Flags");
+        //flagsFB = database.getReference("Flags");
 
         initViews();
 
@@ -347,97 +347,108 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-        // adding to favorites after click on info
-        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
-            @Override
-            public void onInfoWindowClick(final Marker marker) {
-                all.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        for(DataSnapshot post : dataSnapshot.child("Markers").getChildren()){
-                            MarkerClass m = post.getValue(MarkerClass.class);
-                            if(m.getLat() == marker.getPosition().latitude && m.getLng() == marker.getPosition().longitude){
-                                tempMarker = m;
-                                for (DataSnapshot post2 : dataSnapshot.child("Users").child(userID).child("Favorites").getChildren()) {
-                                    MarkerClass m2 = post2.getValue(MarkerClass.class);
-                                    if(m.getLat() == m2.getLat() && m.getLng() == m2.getLng()){favoritesFlag=1;}
-                                }
-                            }
-                        }
-                        if(favoritesFlag==0){
-                            usersFB.child(userID).child("Favorites").push().setValue(tempMarker);
-                            Toast toast = makeText(getApplicationContext(), "Added to favorites", Toast.LENGTH_SHORT);
-                            toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
-                            toast.show();
-                            switch (tempMarker.getType()){
-                                case 0:
-                                    marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mfsport));
-                                    break;
-                                case 1:
-                                    marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mfculture));
-                                    break;
-                                case 2:
-                                    marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mfparty));
-                                    break;
-                                case 3:
-                                    marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mffood));
-                                    break;
-                            }
-                        }else favoritesFlag = 0;
-                    }
+        //if(!userID.equals("")) {
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
-            }
-        });
-
-        // remove from favorites after long pres on info
-        mMap.setOnInfoWindowLongClickListener(new GoogleMap.OnInfoWindowLongClickListener() {
-            @Override
-            public void onInfoWindowLongClick(final Marker marker) {
-
-                all.child("Users").child(userID).child("Favorites").addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.exists()) {
-                            for (DataSnapshot post : dataSnapshot.getChildren()) {
-                                MarkerClass m = post.getValue(MarkerClass.class);
-                                if (m.getLat() == marker.getPosition().latitude && m.getLng() == marker.getPosition().longitude) {
-                                    key = post.getKey();
-                                    Toast toast = makeText(getApplicationContext(), "Removed from favorites", Toast.LENGTH_SHORT);
-                                    toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
-                                    toast.show();
-                                    switch (m.getType()) {
-                                        case 0:
-                                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.msport));
-                                            break;
-                                        case 1:
-                                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mculture));
-                                            break;
-                                        case 2:
-                                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mparty));
-                                            break;
-                                        case 3:
-                                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mfood));
-                                            break;
+            // adding to favorites after click on info
+            mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+                @Override
+                public void onInfoWindowClick(final Marker marker) {
+                    if(!userID.equals("")) {
+                        all.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                for (DataSnapshot post : dataSnapshot.child("Markers").getChildren()) {
+                                    MarkerClass m = post.getValue(MarkerClass.class);
+                                    if (m.getLat() == marker.getPosition().latitude && m.getLng() == marker.getPosition().longitude) {
+                                        tempMarker = m;
+                                        for (DataSnapshot post2 : dataSnapshot.child("Users").child(userID).child("Favorites").getChildren()) {
+                                            MarkerClass m2 = post2.getValue(MarkerClass.class);
+                                            if (m.getLat() == m2.getLat() && m.getLng() == m2.getLng()) {
+                                                favoritesFlag = 1;
+                                            }
+                                        }
                                     }
                                 }
+                                if (favoritesFlag == 0) {
+                                    usersFB.child(userID).child("Favorites").push().setValue(tempMarker);
+                                    Toast toast = makeText(getApplicationContext(), "Added to favorites", Toast.LENGTH_SHORT);
+                                    toast.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                                    toast.show();
+                                    switch (tempMarker.getType()) {
+                                        case 0:
+                                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mfsport));
+                                            break;
+                                        case 1:
+                                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mfculture));
+                                            break;
+                                        case 2:
+                                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mfparty));
+                                            break;
+                                        case 3:
+                                            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mffood));
+                                            break;
+                                    }
+                                } else favoritesFlag = 0;
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
 
                             }
-                            if(!key.equals("")){all.child("Users").child(userID).child("Favorites").child(key).removeValue();}
-                        }
+                        });
                     }
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
+                }
+            });
 
+            // remove from favorites after long pres on info
+            mMap.setOnInfoWindowLongClickListener(new GoogleMap.OnInfoWindowLongClickListener() {
+                @Override
+                public void onInfoWindowLongClick(final Marker marker) {
+                    if(!userID.equals("")) {
+
+                        all.child("Users").child(userID).child("Favorites").addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.exists()) {
+                                    for (DataSnapshot post : dataSnapshot.getChildren()) {
+                                        MarkerClass m = post.getValue(MarkerClass.class);
+                                        if (m.getLat() == marker.getPosition().latitude && m.getLng() == marker.getPosition().longitude) {
+                                            key = post.getKey();
+                                            Toast toast = makeText(getApplicationContext(), "Removed from favorites", Toast.LENGTH_SHORT);
+                                            toast.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
+                                            toast.show();
+                                            switch (m.getType()) {
+                                                case 0:
+                                                    marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.msport));
+                                                    break;
+                                                case 1:
+                                                    marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mculture));
+                                                    break;
+                                                case 2:
+                                                    marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mparty));
+                                                    break;
+                                                case 3:
+                                                    marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.mfood));
+                                                    break;
+                                            }
+                                        }
+
+                                    }
+                                    if (!key.equals("")) {
+                                        all.child("Users").child(userID).child("Favorites").child(key).removeValue();
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
                     }
-                });
-            }
-        });
-
+                }
+            });
+        //}
         // draw all markers on map
         all.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -455,23 +466,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         if (m.getTimeStamp() < (System.currentTimeMillis() / 1000 / 60)) {
                             markersFB.child(k).removeValue();
                         } else {
-                            int ii = 0;
-                            for (DataSnapshot post2 : dataSnapshot.child("Users").child(userID).child("Favorites").getChildren()) {
-                                MarkerClass m2 = post2.getValue(MarkerClass.class);
-                                if (m2.getLng() == m.getLng() && m2.getLat() == m.getLat()) ii++;
-                            }
-                            if (ii == 0) drawMarker(m);
+                            if(!userID.equals("")) {
+                                int ii = 0;
+                                for (DataSnapshot post2 : dataSnapshot.child("Users").child(userID).child("Favorites").getChildren()) {
+                                    MarkerClass m2 = post2.getValue(MarkerClass.class);
+                                    if (m2.getLng() == m.getLng() && m2.getLat() == m.getLat())
+                                        ii++;
+                                }
+                                if (ii == 0) drawMarker(m);
+                            }else drawMarker(m);
                         }
                     }
 
-                    for (DataSnapshot post : dataSnapshot.child("Users").child(userID).child("Favorites").getChildren()) {
-                        String k = post.getKey();
-                        MarkerClass m = post.getValue(MarkerClass.class);
-                        //String[] s = m.getTime().split("[ :]");
-                        Log.v(TAG, "" + m.getTimeStamp());
-                        if (m.getTimeStamp() < (System.currentTimeMillis() / 1000 / 60)) {
-                            all.child("Users").child(userID).child("Favorites").child(k).removeValue();
-                        } else drawFavoriteMarker(m);
+                    if(!userID.equals("")) {
+                        for (DataSnapshot post : dataSnapshot.child("Users").child(userID).child("Favorites").getChildren()) {
+                            String k = post.getKey();
+                            MarkerClass m = post.getValue(MarkerClass.class);
+                            //String[] s = m.getTime().split("[ :]");
+                            Log.v(TAG, "" + m.getTimeStamp());
+                            if (m.getTimeStamp() < (System.currentTimeMillis() / 1000 / 60)) {
+                                all.child("Users").child(userID).child("Favorites").child(k).removeValue();
+                            } else drawFavoriteMarker(m);
+                        }
                     }
                 }
             }
@@ -512,32 +528,35 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         currentH = c.get(Calendar.HOUR_OF_DAY);
         currentM = c.get(Calendar.MINUTE);
 
-        usersFB.child(userID).child("FilteredMarkers").removeValue();
+        if(!userID.equals("")) usersFB.child(userID).child("FilteredMarkers").removeValue();
         if(!startFromNotification) usersFB.child(userID).child("NewFromService").removeValue();
         cancelAlarm();
         registerReceiver(receiver, new IntentFilter(TrackingService.NOTIFICATION));
-        usersFB.child(userID).child("Flags").child("settingsSwitch").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                startService = dataSnapshot.getValue(boolean.class);
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+        if(!userID.equals("")) {
+            usersFB.child(userID).child("Flags").child("settingsSwitch").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    startService = dataSnapshot.getValue(boolean.class);
+                }
 
-            }
-        });
-        usersFB.child(userID).child("Flags").child("settingsRadius").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                radiusSettings = Integer.toString(dataSnapshot.getValue(Integer.class));
-            }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                }
+            });
+            usersFB.child(userID).child("Flags").child("settingsRadius").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    radiusSettings = Integer.toString(dataSnapshot.getValue(Integer.class));
+                }
 
-            }
-        });
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
     }
 
     @Override
@@ -545,12 +564,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onPause();
 
         Log.v("Service", "OnPause ");
-//        Log.v(TAG, ""+myL.getLatitude()+" "+myL.getLongitude());
-//        Log.v(TAG, ""+eventType);
-
 
         unregisterReceiver(receiver);
 
+        if(!userID.equals("")){
+            usersFB.child(userID).child("Flags").child("settingsSwitch").setValue(startService);
+            if(!radiusSettings.equals("")){
+                usersFB.child(userID).child("Flags").child("settingsRadius").setValue(Integer.parseInt(radiusSettings));
+            }else usersFB.child(userID).child("Flags").child("settingsRadius").setValue(0);
+
+            usersFB.child(userID).child("Flags").child("settingsType").setValue(typeSettings);
+        }
         // start tracking after closing app
         if(startService){
             markersFB.addListenerForSingleValueEvent(new ValueEventListener() {
