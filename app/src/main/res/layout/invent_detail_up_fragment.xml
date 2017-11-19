@@ -9,23 +9,44 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <EditText
-        android:id="@+id/title"
+    <TextView
+        android:id="@+id/textView2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
+        android:layout_marginLeft="30dp"
         android:layout_marginTop="20dp"
-        android:ems="10"
-        android:hint="Title"
-        android:inputType="text" />
+        android:text="General"
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/borders"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:hint="Title"
+            android:imeOptions="actionDone"
+            android:inputType="text" />
+    </LinearLayout>
+
+
+    <!--<LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="2dp"
+        android:background="@drawable/borders"
         android:orientation="horizontal"
         android:paddingTop="10dp"
         android:weightSum="4">
@@ -61,7 +82,7 @@
             android:layout_weight="1"
             android:text="FOOD"
             android:textAlignment="center" />
-    </LinearLayout>
+    </LinearLayout>-->
 
     <RadioGroup
         android:id="@+id/radioGroup"
@@ -69,7 +90,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="2dp"
         android:gravity="center"
         android:orientation="horizontal">
 
@@ -78,6 +99,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:background="@drawable/borders"
             android:drawableRight="@drawable/misport" />
 
         <RadioButton
@@ -85,6 +107,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:background="@drawable/borders"
             android:drawableRight="@drawable/miculture" />
 
         <RadioButton
@@ -92,6 +115,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:background="@drawable/borders"
             android:drawableRight="@drawable/miparty" />
 
         <RadioButton
@@ -99,51 +123,90 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:background="@drawable/borders"
             android:drawableRight="@drawable/mifood" />
 
     </RadioGroup>
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/textView3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:orientation="horizontal">
-
-        <EditText
-            android:id="@+id/detail"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:ems="10"
-            android:hint="Details (optional)"
-            android:inputType="text" />
-
-    </LinearLayout>
+        android:layout_marginLeft="30dp"
+        android:layout_marginTop="10dp"
+        android:text="Time"
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
-        android:layout_marginTop="20dp"
-        android:orientation="horizontal">
+        android:layout_marginTop="2dp"
+        android:background="@drawable/borders"
+        android:orientation="horizontal"
+        android:weightSum="11">
 
         <Button
             android:id="@+id/timeBtn"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"
+            android:layout_weight="5"
+            android:background="@android:color/transparent"
+            android:gravity="left|center_vertical"
             android:onClick="setTime"
-            android:text="set start time" />
+            android:paddingLeft="5dp"
+            android:text="Start" />
 
         <TextView
             android:id="@+id/timeText"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center"
+            android:layout_weight="5"
+            android:gravity="center_vertical"
             android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/textView10"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center_vertical|end"
+            android:text=">"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textView7"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
+        android:layout_marginTop="20dp"
+        android:text="Description"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="2dp"
+        android:background="@drawable/borders"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/detail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:ems="10"
+            android:imeOptions="actionDone"
+            android:maxLength="300"
+            android:maxLines="6"
+            android:minLines="3" />
 
     </LinearLayout>
 
