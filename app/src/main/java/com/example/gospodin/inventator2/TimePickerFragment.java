@@ -47,6 +47,8 @@ public class TimePickerFragment extends DialogFragment{
         tod = (Button) view.findViewById(R.id.todBtn);
         tom = (Button) view.findViewById(R.id.tomBtn);
 
+        tp.setIs24HourView(true);
+
         tod.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

@@ -10,7 +10,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:background="#6DBBBB"
+        android:background="#8c8b8b"
         android:onClick="searchInvent"
         android:src="@drawable/search2" />
 
@@ -18,22 +18,12 @@
         android:id="@+id/invent_button"
 
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="#6DBBBB"
+        android:layout_height="match_parent"
+        android:background="#8c8b8b"
         android:onClick="createInvent"
 
-        android:src="@drawable/newinventpos" />
+        android:src="@drawable/addevent" />
 
-    <!--android:background="@drawable/buttonshape"
-
-
-        android:shadowColor="#6C1EA8"
-        android:shadowDx="0"
-        android:shadowDy="0"
-        android:shadowRadius="9"
-        android:text="New Invent"
-        android:textColor="#FFFCFC"
-        android:textSize="18sp" /> -->
 
 
     <ImageButton
@@ -41,8 +31,18 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:background="#6DBBBB"
+        android:background="#8c8b8b"
         android:onClick="settingsInvent"
         android:src="@drawable/settings2" />
 
+    <!--android:background="@drawable/buttonshape"
+
+
+            android:shadowColor="#6C1EA8"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="9"
+            android:text="New Invent"
+            android:textColor="#FFFCFC"
+            android:textSize="18sp" /> -->
 </LinearLayout>

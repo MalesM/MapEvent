@@ -838,7 +838,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         FragmentSearchUp fragmentSearchUp = (FragmentSearchUp) getSupportFragmentManager().findFragmentByTag("Search");
         fragmentSearchUp.sendRadiusToA();
 
-        if(!searchTypes.equals("")) {
+        if(!searchTypes.equals("") && myL != null) {
 
             usersFB.child(userID).child("SearchMarkers").removeValue();
             mMap.clear();
@@ -861,8 +861,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             FragmentButtonsHome fragmentButtonsHome = new FragmentButtonsHome();
             fragmentTransaction.replace(R.id.fragment_buttons, fragmentButtonsHome);
             Log.v(TAG, searchTypes);
-        }else {
+        }else if(searchTypes.equals("")){
             Toast toast = makeText(getApplicationContext(), "Must select type", Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
+            toast.show();
+        }else {
+            Toast toast = makeText(getApplicationContext(), "Location problem", Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
             toast.show();
         }
