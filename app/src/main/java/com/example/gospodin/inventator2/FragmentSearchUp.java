@@ -16,7 +16,7 @@ public class FragmentSearchUp extends Fragment {
     SendRadius sendRadius;
     TextView distance;
     SeekBar seekBar;
-    CheckBox c1, c2, c3, c4;
+    CheckBox c1, c2, c3, c4, c5;
 
     public interface SendRadius{
         void getRadius(String r, String searchType);
@@ -50,6 +50,7 @@ public class FragmentSearchUp extends Fragment {
         c2 = (CheckBox) v.findViewById(R.id.cbC);
         c3 = (CheckBox) v.findViewById(R.id.cbP);
         c4 = (CheckBox) v.findViewById(R.id.cbF);
+        c5 = (CheckBox) v.findViewById(R.id.cbFav);
 
 
         return v;
@@ -72,6 +73,7 @@ public class FragmentSearchUp extends Fragment {
         if(c2.isChecked()){s += "1";}
         if(c3.isChecked()){s += "2";}
         if(c4.isChecked()){s += "3";}
+        if(c5.isChecked()){s += "4";}
         sendRadius.getRadius(distance.getText().toString(), s);
     }
 }

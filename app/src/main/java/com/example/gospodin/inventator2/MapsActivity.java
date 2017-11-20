@@ -98,11 +98,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            usersFB.child(userID).child("SearchMarkers").addListenerForSingleValueEvent(new ValueEventListener() {
+            usersFB.child(userID).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    for(DataSnapshot post : dataSnapshot.getChildren()){
+                    for(DataSnapshot post : dataSnapshot.child("SearchMarkers").getChildren()){
                          drawMarker(post.getValue(MarkerClass.class));
+                    }
+
+                    if(searchTypes.contains("4")) {
+                        for (DataSnapshot post : dataSnapshot.child("Favorites").getChildren()) {
+                            drawFavoriteMarker(post.getValue(MarkerClass.class));
+                        }
                     }
                     usersFB.child(userID).child("SearchMarkers").removeValue();
                 }

@@ -16,6 +16,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:layout_marginTop="20dp"
         android:orientation="horizontal">
 
@@ -42,18 +44,20 @@
         android:id="@+id/seekBar"
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp" />
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:background="@drawable/borders" />
 
     <TextView
         android:id="@+id/textView8"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
         android:gravity="center"
         android:text="Type"
         android:textSize="30sp" />
 
-    <LinearLayout
+    <!--<LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
@@ -90,12 +94,14 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="food" />
-    </LinearLayout>
+    </LinearLayout>-->
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="10dp"
         android:orientation="horizontal">
 
         <CheckBox
@@ -103,28 +109,47 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@android:color/holo_red_light" />
+            android:background="@drawable/borders"
+            android:drawableRight="@drawable/misport" />
 
         <CheckBox
             android:id="@+id/cbC"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@android:color/holo_blue_dark" />
+            android:background="@drawable/borders"
+            android:drawableRight="@drawable/miculture" />
 
         <CheckBox
             android:id="@+id/cbP"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@android:color/holo_green_dark" />
+            android:background="@drawable/borders"
+            android:drawableRight="@drawable/miparty" />
 
         <CheckBox
             android:id="@+id/cbF"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@android:color/holo_orange_light" />
+            android:background="@drawable/borders"
+            android:drawableRight="@drawable/mifood" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/cbFav"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/borders"
+            android:drawableRight="@drawable/sfavorite" />
     </LinearLayout>
 
 </LinearLayout>
