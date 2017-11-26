@@ -32,7 +32,6 @@ public class FragmentCreateUp extends Fragment /*implements TimePickerFragment.S
 
         View v = inflater.inflate(R.layout.invent_detail_up_fragment, container, false);
 
-
         title = (EditText) v.findViewById(R.id.title);
         detail = (EditText) v.findViewById(R.id.detail);
         timeText = (TextView) v.findViewById(R.id.timeText);
@@ -60,7 +59,6 @@ public class FragmentCreateUp extends Fragment /*implements TimePickerFragment.S
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString()
                     + " must implement OnHeadlineSelectedListener");
-
         }
     }
 
@@ -73,7 +71,6 @@ public class FragmentCreateUp extends Fragment /*implements TimePickerFragment.S
     public void error(){
         title.setError("Must contain title");
         title.setBackgroundColor(Color.parseColor("#FFEBEE"));
-
     }
 
     public void getTime(int a, int b, String day){
