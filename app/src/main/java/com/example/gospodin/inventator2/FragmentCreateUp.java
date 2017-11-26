@@ -43,7 +43,7 @@ public class FragmentCreateUp extends Fragment /*implements TimePickerFragment.S
             @Override
             public void onFocusChange(View view, boolean b) {
                 if(b){
-                    title.setBackgroundColor(Color.WHITE);
+                    title.setBackgroundColor(Color.TRANSPARENT);
                     title.setError(null);
                 }
             }
